@@ -201,8 +201,44 @@ npm run build     → Exit 0 (20/20 routes compiled)
 test-auth-security.mjs → 8/8 PASSED
 ```
 
+---
 
-To deploy Eventora AI to Vercel:
+## AMENDMENT — Signup Cooldown UI & Single-Banner Resolution (2026-10-31)
+
+### Problem Addressed
+The Create Account page was displaying two conflicting message banners simultaneously:
+1. An error alert: `"Too many registration or verification email requests. Please wait before trying again."`
+2. An active cooldown notice: `"Please wait 1s before submitting another registration request."`
+Furthermore, when the countdown expired, the stale rate-limit error persisted on screen.
+
+### Architectural Resolution
+1. **Single-Banner Priority Architecture:**
+   - Replaced overlapping banner blocks with a strictly mutually exclusive message container:
+     - `isSignupCooldownActive` takes precedence during active cooldown: renders only `"Please wait {cooldownRemaining} seconds before trying again."` with a separate `"Switch to Sign In →"` action.
+     - `errorMessage` is rendered only when not in cooldown (e.g., standard credential validation errors).
+     - `successMessage` is rendered only on successful verification dispatch.
+   - At no time can multiple conflicting messages appear simultaneously.
+2. **Error-State Cleanup:**
+   - When the cooldown reaches 0, the stale rate-limit error message and switch button are explicitly cleared (`setErrorMessage(null); setShowSwitchToSignIn(false)`).
+   - The Create Account button is restored to its default state (`"Create Verified Account"`, enabled) with zero automatic retries.
+   - Switching tabs (`Sign In`, `Create Account`, `Forgot Password`) completely purges stale errors from the previous view.
+3. **SessionStorage-Backed Cooldown Resilience:**
+   - Cooldown uses an expiry timestamp in `sessionStorage` (`eventora_signup_cooldown_expiry`).
+   - Page refresh during cooldown seamlessly resumes the countdown from the exact remaining seconds rather than restarting to 60s.
+   - Cooldown is never triggered on page load or tab switching — it activates only upon an actual signup submission.
+   - Sign In and Forgot Password tabs remain 100% accessible and unblocked during signup cooldown.
+4. **Friendly Rate-Limit Copy:**
+   - Mapped `over_email_send_rate_limit` to `"Email delivery is temporarily limited. Please try again later or sign in if you already have an account."` with a direct `"Switch to Sign In →"` CTA.
+
+### Verification Results
+- **ESLint:** `npm run lint` — 0 errors, 0 warnings.
+- **TypeScript:** `npx tsc --noEmit` — 0 errors.
+- **Next.js Production Build:** `npm run build` — 20/20 routes compiled successfully.
+- **Auth Security Suite:** `node scripts/test-auth-security.mjs` — 8/8 tests passed.
+
+---
+
+## VERCEL PRODUCTION DEPLOYMENT GUIDE
 
 ### 1. Set Environment Variables in Vercel Dashboard:
 - `GEMINI_API_KEY`: Your Google Gemini API Key.

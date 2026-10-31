@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Sparkles, Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle2,
@@ -9,7 +9,8 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { Toast } from '@/components/Toast';
 
-// ── How many seconds the user must wait before submitting another signup ──────
+// ── Cooldown configuration ──────────────────────────────────────────────────
+const SIGNUP_COOLDOWN_STORAGE_KEY = 'eventora_signup_cooldown_expiry';
 const SIGNUP_COOLDOWN_SECONDS = 60;
 
 // ── View modes ────────────────────────────────────────────────────────────────
@@ -36,33 +37,75 @@ function AuthContent() {
     signedOutParam === 'true' ? 'You have successfully signed out.' : null
   );
 
-  // ── Client-side signup cooldown ────────────────────────────────────────────
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  // ── Client-side signup cooldown (kept completely separate from error state) ─
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    try {
+      const stored = sessionStorage.getItem(SIGNUP_COOLDOWN_STORAGE_KEY);
+      if (stored) {
+        const expiry = parseInt(stored, 10);
+        const remaining = Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+        if (remaining > 0) return remaining;
+        sessionStorage.removeItem(SIGNUP_COOLDOWN_STORAGE_KEY);
+      }
+    } catch {
+      // ignore
+    }
+    return 0;
+  });
+
   const cooldownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  function startCooldown() {
-    setCooldownRemaining(SIGNUP_COOLDOWN_SECONDS);
-    if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+  // Start cooldown only after an actual signup submission
+  const startCooldown = useCallback((seconds: number = SIGNUP_COOLDOWN_SECONDS) => {
+    const expiry = Date.now() + seconds * 1000;
+    try {
+      sessionStorage.setItem(SIGNUP_COOLDOWN_STORAGE_KEY, expiry.toString());
+    } catch {
+      // ignore
+    }
+    setCooldownRemaining(seconds);
+  }, []);
+
+  // Manage cooldown ticker effect
+  const isCooldownActive = cooldownRemaining > 0;
+  useEffect(() => {
+    if (!isCooldownActive) return;
+
+    if (cooldownTimer.current) {
+      clearInterval(cooldownTimer.current);
+    }
+
     cooldownTimer.current = setInterval(() => {
       setCooldownRemaining((prev) => {
         if (prev <= 1) {
-          clearInterval(cooldownTimer.current!);
-          cooldownTimer.current = null;
+          if (cooldownTimer.current) {
+            clearInterval(cooldownTimer.current);
+            cooldownTimer.current = null;
+          }
+          try {
+            sessionStorage.removeItem(SIGNUP_COOLDOWN_STORAGE_KEY);
+          } catch {
+            // ignore
+          }
+          // Clear stale signup rate-limit errors and switch button when cooldown expires
+          setErrorMessage(null);
+          setShowSwitchToSignIn(false);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-  }
 
-  // Cleanup timer on unmount
-  useEffect(() => {
     return () => {
-      if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+      if (cooldownTimer.current) {
+        clearInterval(cooldownTimer.current);
+        cooldownTimer.current = null;
+      }
     };
-  }, []);
+  }, [isCooldownActive]);
 
-  // Reset errors when switching view
+  // Reset old errors when switching view
   function switchView(next: ViewMode) {
     setView(next);
     setErrorMessage(null);
@@ -83,7 +126,7 @@ function AuthContent() {
         // ── Sign In — only calls signInWithPassword ─────────────────────────
         const result = await signIn(email, password);
         if (!result.success) {
-          setErrorMessage(result.error || 'Authentication failed. Please verify your credentials.');
+          setErrorMessage(result.error || 'Invalid email or password. Please check your details and try again.');
           setLoading(false);
           return;
         }
@@ -94,11 +137,22 @@ function AuthContent() {
         const result = await signUp(email, password, name);
 
         if (!result.success) {
-          setErrorMessage(result.error || 'Registration failed. Please try again.');
-          // If it is a rate-limit error, offer the "switch to Sign In" CTA
-          if (result.error?.includes('Too many registration')) {
+          const isRateLimit = Boolean(
+            result.isRateLimited ||
+            result.error?.includes('temporarily limited') ||
+            result.error?.includes('rate limit')
+          );
+
+          if (isRateLimit) {
+            setErrorMessage('Email delivery is temporarily limited. Please try again later or sign in if you already have an account.');
             setShowSwitchToSignIn(true);
-            startCooldown();
+            // Apply 60-second cooldown only after an actual signup submission
+            startCooldown(SIGNUP_COOLDOWN_SECONDS);
+          } else {
+            setErrorMessage(result.error || 'Registration failed. Please try again.');
+            if (result.error?.includes('already exists')) {
+              setShowSwitchToSignIn(true);
+            }
           }
           setLoading(false);
           return;
@@ -119,9 +173,8 @@ function AuthContent() {
               `Please check your inbox and click the confirmation link before signing in.`
             );
           }
-          // After any successful signUp call, apply a cooldown to prevent
-          // accidental repeated verification email requests
-          startCooldown();
+          // After verification email request, start cooldown to prevent accidental repeated sends
+          startCooldown(SIGNUP_COOLDOWN_SECONDS);
           setView('signin');
           setPassword('');
         } else {
@@ -174,6 +227,7 @@ function AuthContent() {
   };
 
   // ── Derived state ──────────────────────────────────────────────────────────
+  // Sign In and Forgot Password remain available during signup cooldown!
   const isSignupCooldownActive = view === 'signup' && cooldownRemaining > 0;
   const submitDisabled = loading || isSignupCooldownActive;
 
@@ -197,54 +251,6 @@ function AuthContent() {
           {view === 'forgot' && "Enter your email and we'll send you a reset link"}
         </p>
       </div>
-
-      {/* Error Banner */}
-      {errorMessage && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start space-x-2 text-rose-700 dark:text-rose-300 text-xs animate-in fade-in">
-          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-          <div className="flex-1 font-medium leading-relaxed">
-            {errorMessage}
-            {showSwitchToSignIn && (
-              <button
-                type="button"
-                onClick={() => switchView('signin')}
-                className="block mt-2 text-violet-700 dark:text-violet-400 font-bold underline underline-offset-2 hover:no-underline"
-              >
-                Switch to Sign In →
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Success Banner */}
-      {successMessage && (
-        <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 flex items-start space-x-2 text-emerald-700 dark:text-emerald-300 text-xs animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          <div className="flex-1 font-medium leading-relaxed">
-            {successMessage}
-            {showSwitchToSignIn && (
-              <button
-                type="button"
-                onClick={() => switchView('signin')}
-                className="block mt-2 text-violet-700 dark:text-violet-400 font-bold underline underline-offset-2 hover:no-underline"
-              >
-                Go to Sign In →
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Cooldown Notice (signup only) */}
-      {isSignupCooldownActive && (
-        <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-center space-x-2 text-amber-700 dark:text-amber-300 text-xs">
-          <Clock className="w-4 h-4 shrink-0" />
-          <span className="font-medium">
-            Please wait <span className="font-black">{cooldownRemaining}s</span> before submitting another registration request.
-          </span>
-        </div>
-      )}
 
       {/* Tab switcher — Sign In / Create Account (not shown for Forgot Password) */}
       {view !== 'forgot' && (
@@ -274,7 +280,74 @@ function AuthContent() {
         </div>
       )}
 
-      {/* ── SIGN IN FORM ──────────────────────────────────────────────────── */}
+      {/* ── SINGLE MESSAGE BANNER (Show only one relevant message at a time) ── */}
+      {isSignupCooldownActive ? (
+        /* During cooldown: Show ONLY the cooldown notice with countdown and optional Switch to Sign In */
+        <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 text-xs animate-in fade-in">
+          <div className="flex items-start space-x-2">
+            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 font-medium leading-relaxed">
+              <span>
+                Please wait {cooldownRemaining} {cooldownRemaining === 1 ? 'second' : 'seconds'} before trying again.
+              </span>
+              {showSwitchToSignIn && (
+                <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-800/40 flex items-center justify-between">
+                  <span className="text-[11px] text-amber-700/80 dark:text-amber-300/80">Already have an account?</span>
+                  <button
+                    type="button"
+                    onClick={() => switchView('signin')}
+                    className="text-violet-700 dark:text-violet-400 font-bold hover:underline text-xs"
+                  >
+                    Switch to Sign In →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : errorMessage ? (
+        /* Error Banner — shown when not in cooldown */
+        <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start space-x-2 text-rose-700 dark:text-rose-300 text-xs animate-in fade-in">
+          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="flex-1 font-medium leading-relaxed">
+            <div>{errorMessage}</div>
+            {showSwitchToSignIn && (
+              <div className="mt-2.5 pt-2 border-t border-rose-200/60 dark:border-rose-900/40 flex items-center justify-between">
+                <span className="text-[11px] text-rose-700/80 dark:text-rose-300/80">Already have an account?</span>
+                <button
+                  type="button"
+                  onClick={() => switchView('signin')}
+                  className="text-violet-700 dark:text-violet-400 font-bold hover:underline text-xs"
+                >
+                  Switch to Sign In →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : successMessage ? (
+        /* Success Banner */
+        <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 flex items-start space-x-2 text-emerald-700 dark:text-emerald-300 text-xs animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="flex-1 font-medium leading-relaxed">
+            <div>{successMessage}</div>
+            {showSwitchToSignIn && (
+              <div className="mt-2.5 pt-2 border-t border-emerald-200/60 dark:border-emerald-900/40 flex items-center justify-between">
+                <span className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80">Already have an account?</span>
+                <button
+                  type="button"
+                  onClick={() => switchView('signin')}
+                  className="text-violet-700 dark:text-violet-400 font-bold hover:underline text-xs"
+                >
+                  Go to Sign In →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* ── SIGN IN / SIGN UP FORM ────────────────────────────────────────── */}
       {view !== 'forgot' && (
         <form onSubmit={handleAuthSubmit} className="space-y-4 text-xs">
 

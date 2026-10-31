@@ -7,11 +7,12 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 export interface AuthResponse {
   success: boolean;
   error?: string;
+  isRateLimited?: boolean;
   requiresEmailConfirmation?: boolean;
   /**
    * True when signUp returns a user with an empty identities array, which
    * Supabase emits for already-registered emails (instead of revealing that
-   * the account exists).  The UI should show a "check your inbox OR sign in"
+   * the account exists). The UI should show a "check your inbox OR sign in"
    * message without explicitly confirming the email is taken.
    */
   possibleDuplicate?: boolean;
@@ -52,7 +53,7 @@ function mapSignInError(message: string): string {
 
 function mapSignUpError(message: string, code?: string): string {
   if (code === 'over_email_send_rate_limit' || message.includes('rate limit')) {
-    return 'Too many registration or verification email requests. Please wait before trying again. If you already have an account, switch to Sign In.';
+    return 'Email delivery is temporarily limited. Please try again later or sign in if you already have an account.';
   }
   if (code === 'user_already_exists' || message.includes('already registered')) {
     return 'An account with this email already exists. Please switch to Sign In.';
@@ -211,10 +212,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
-          // Explicit error code mapping — never pass raw server messages to the user
+          const isRateLimit =
+            error.code === 'over_email_send_rate_limit' ||
+            error.message.toLowerCase().includes('rate limit');
+
           return {
             success: false,
             error: mapSignUpError(error.message, error.code ?? undefined),
+            isRateLimited: isRateLimit,
           };
         }
 
