@@ -129,29 +129,35 @@ export default function BudgetPage() {
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Planned Budget</span>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Total Planned Budget
+          </span>
+          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
             {formatCurrency(currentEvent.totalBudget)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">100% Target Cap</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">100% Target Cap</div>
         </div>
 
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Actual Outlay</span>
-          <div className="text-2xl font-extrabold text-pink-600 dark:text-pink-400 mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Total Actual Outlay
+          </span>
+          <div className="text-3xl font-black text-pink-600 dark:text-pink-400 mt-1">
             {formatCurrency(totalSpent)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
             {budgetProgressPercentage}% committed across {expenses.length} records
           </div>
         </div>
 
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Remaining Uncommitted Budget</span>
-          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Remaining Uncommitted Budget
+          </span>
+          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
             {formatCurrency(remainingBudget)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
             {Math.max(0, 100 - budgetProgressPercentage)}% available for pending contracts
           </div>
         </div>

@@ -120,23 +120,25 @@ export default function TimelinePage() {
       {/* Progress Metric Banner */}
       <div className="mb-8 p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Completion Velocity</span>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-0.5">
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-200 uppercase tracking-wider">
+            Total Completion Velocity
+          </span>
+          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
             {taskCompletionPercentage}% Complete
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
             {completedTasksCount} of {totalTasksCount} milestones accomplished
           </p>
         </div>
 
         <div className="sm:w-72">
-          <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+          <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-violet-600 to-emerald-500 transition-all duration-500"
               style={{ width: `${Math.min(100, taskCompletionPercentage)}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-slate-400 mt-1.5">
+          <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
             <span>6 Months Out</span>
             <span>Event Day</span>
           </div>

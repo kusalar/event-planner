@@ -89,19 +89,23 @@ export default function VendorsPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Quoted Commitments</span>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Total Quoted Commitments
+          </span>
+          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
             {formatCurrency(totalVendorCommitted)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">Across {vendors.length} vendor partners</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">Across {vendors.length} vendor partners</div>
         </div>
 
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Advances Paid</span>
-          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Advances Paid
+          </span>
+          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
             {formatCurrency(totalVendorAdvancePaid)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
             {totalVendorCommitted > 0
               ? `${Math.round((totalVendorAdvancePaid / totalVendorCommitted) * 100)}% secured deposits`
               : '0% deposits'}
@@ -109,11 +113,13 @@ export default function VendorsPage() {
         </div>
 
         <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Outstanding Balances Due</span>
-          <div className="text-2xl font-extrabold text-pink-600 dark:text-pink-400 mt-1">
+          <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
+            Outstanding Balances Due
+          </span>
+          <div className="text-3xl font-black text-pink-600 dark:text-pink-400 mt-1">
             {formatCurrency(remainingBalanceTotal)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">Payable upon delivery & event day wrap-up</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">Payable upon delivery & event day wrap-up</div>
         </div>
       </div>
 

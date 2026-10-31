@@ -153,39 +153,41 @@ export default function DashboardPage() {
       {/* Primary KPI Grid (4 Metrics Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Metric 1: Total Budget */}
-        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200 mb-2 font-semibold">
             <span>Total Planned Budget</span>
-            <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-300 flex items-center justify-center font-bold">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-violet-300">
+          <div className="text-3xl font-black text-slate-950 dark:text-white tracking-tight mt-1">
             {formatCurrency(currentEvent.totalBudget)}
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">
             <span>Allocated in {budgetCategories.length} categories</span>
-            <Link href="/budget" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
+            <Link href="/budget" className="text-violet-600 dark:text-violet-400 font-bold hover:underline">
               Manage →
             </Link>
           </div>
         </div>
 
         {/* Metric 2: Actual Spent & Progress */}
-        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200 mb-2 font-semibold">
             <span>Expenses Committed</span>
-            <div className="w-7 h-7 rounded-lg bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-300 flex items-center justify-center font-bold">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">{formatCurrency(totalSpent)}</div>
+          <div className="text-3xl font-black text-rose-600 dark:text-rose-300 tracking-tight mt-1">
+            {formatCurrency(totalSpent)}
+          </div>
           <div className="mt-3">
-            <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+            <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-medium mb-1.5">
               <span>{budgetProgressPercentage}% of total budget</span>
               <span>Rem: {formatCurrency(remainingBudget)}</span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   budgetProgressPercentage > 90
@@ -201,24 +203,26 @@ export default function DashboardPage() {
         </div>
 
         {/* Metric 3: Timeline Progress */}
-        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200 mb-2 font-semibold">
             <span>Task Completion</span>
-            <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 flex items-center justify-center font-bold">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-purple-600 dark:text-purple-300">{taskCompletionPercentage}%</div>
+          <div className="text-3xl font-black text-violet-600 dark:text-violet-300 tracking-tight mt-1">
+            {taskCompletionPercentage}%
+          </div>
           <div className="mt-3">
-            <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+            <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-medium mb-1.5">
               <span>
                 {completedTasksCount} of {totalTasksCount} milestones completed
               </span>
-              <Link href="/timeline" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
+              <Link href="/timeline" className="text-violet-600 dark:text-violet-400 font-bold hover:underline">
                 View →
               </Link>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-all duration-500"
                 style={{ width: `${Math.min(100, taskCompletionPercentage)}%` }}
@@ -228,22 +232,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Metric 4: Booked Vendors */}
-        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200 mb-2 font-semibold">
             <span>Vendor Bookings</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center font-bold">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-300 tracking-tight mt-1">
             {bookedVendorsCount}{' '}
-            <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ {vendors.length} Total</span>
+            <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">/ {vendors.length} Total</span>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">
             <span>
               {vendors.filter((v) => v.status === 'inquiry').length} inquiry pending
             </span>
-            <Link href="/vendors" className="text-violet-600 dark:text-violet-400 font-semibold hover:underline">
+            <Link href="/vendors" className="text-violet-600 dark:text-violet-400 font-bold hover:underline">
               Vendor OS →
             </Link>
           </div>

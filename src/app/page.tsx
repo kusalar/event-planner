@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles,
@@ -10,6 +11,8 @@ import {
   Calendar,
   Users,
   ChevronRight,
+  Wand2,
+  MapPin,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -140,68 +143,127 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Product UI Preview Mockup */}
-        <div className="relative max-w-5xl mx-auto rounded-2xl glass-card p-3 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
+        {/* Visual Hero Showcase with AI-Generated Cinematic Preview */}
+        <div className="relative max-w-5xl mx-auto mb-10 rounded-3xl overflow-hidden glass-card shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
           {/* Mock Window Top Bar */}
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-xs">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full bg-red-400" />
               <div className="w-3 h-3 rounded-full bg-amber-400" />
               <div className="w-3 h-3 rounded-full bg-emerald-400" />
-              <span className="ml-2 font-mono text-[11px] text-slate-400">eventora.ai/dashboard/bengali-wedding</span>
-            </div>
-            <div className="flex items-center space-x-2 text-[11px] text-emerald-500 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>AI Director Live</span>
-            </div>
-          </div>
-
-          {/* Mock Dashboard Body */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Metric 1 */}
-            <div className="p-4 rounded-xl bg-violet-50/50 dark:bg-violet-950/20 border border-violet-100 dark:border-violet-900/40">
-              <span className="text-[11px] font-semibold text-violet-600 dark:text-violet-400">Total Event Budget</span>
-              <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">₹8,00,000</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
-                ₹1,70,000 paid advances • ₹6,30,000 remaining
-              </div>
-            </div>
-
-            {/* Metric 2 */}
-            <div className="p-4 rounded-xl bg-pink-50/50 dark:bg-pink-950/20 border border-pink-100 dark:border-pink-900/40">
-              <span className="text-[11px] font-semibold text-pink-600 dark:text-pink-400">Timeline Milestones</span>
-              <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">37% Done</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
-                3 of 8 critical deliverables completed
-              </div>
-            </div>
-
-            {/* Metric 3 */}
-            <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40">
-              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Vendor Commitments</span>
-              <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">4 Booked</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
-                Venue, Caterer, Photo & Decor locked
-              </div>
-            </div>
-          </div>
-
-          {/* Quick AI Tip Ribbon */}
-          <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-pink-500/10 border border-violet-500/20 flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs">
-              <Sparkles className="w-4 h-4 text-violet-500" />
-              <span className="text-slate-700 dark:text-slate-300 font-medium">
-                <strong>Eventora AI Suggestion:</strong> Replaced exotic blooms with local marigolds — saved ₹28,000 in
-                decor budget.
+              <span className="ml-2 font-mono text-[11px] text-slate-500 dark:text-slate-300 font-medium">
+                eventora.ai/live-simulation/bengali-royal-wedding
               </span>
             </div>
-            <Link
-              href="/budget"
-              className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline flex items-center space-x-1"
-            >
-              <span>View Budget</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
+            <div className="flex items-center space-x-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/80">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>AI Spatial & Aesthetic Director Live</span>
+            </div>
+          </div>
+
+          {/* Hero Cinematic Image Banner with Overlaid Glass Cards */}
+          <div className="relative w-full h-[320px] sm:h-[440px] lg:h-[500px] overflow-hidden bg-slate-950">
+            <Image
+              src="/eventora-hero.jpg"
+              alt="Eventora AI Royal Bengali Wedding & Luxury Gala Visualization"
+              fill
+              priority
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
+            />
+            {/* Ambient vignette gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
+
+            {/* Floating Live AI Badges on Hero Image */}
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-wrap gap-2.5 z-10">
+              <div className="px-3.5 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur-md border border-white/20 text-white text-xs font-bold shadow-lg flex items-center space-x-2">
+                <MapPin className="w-3.5 h-3.5 text-pink-400" />
+                <span>Kolkata, West Bengal</span>
+              </div>
+              <div className="px-3.5 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur-md border border-white/20 text-white text-xs font-bold shadow-lg flex items-center space-x-2">
+                <Users className="w-3.5 h-3.5 text-violet-400" />
+                <span>300 Guests</span>
+              </div>
+              <div className="px-3.5 py-1.5 rounded-xl bg-slate-900/85 backdrop-blur-md border border-white/20 text-white text-xs font-bold shadow-lg flex items-center space-x-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Traditional Shehnai & Marigold Decor</span>
+              </div>
+            </div>
+
+            {/* Bottom Hero Caption Glass Overlay */}
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 p-4 sm:p-5 rounded-2xl bg-slate-900/90 backdrop-blur-xl border border-white/20 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 z-10">
+              <div>
+                <div className="flex items-center space-x-2 text-violet-400 text-xs font-bold uppercase tracking-wider mb-1">
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>Generative AI Production Blueprint</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-black text-white">
+                  Bengali Royal Wedding & 2-Day Cultural Celebration
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl font-normal leading-relaxed">
+                  Synthesized in 2.8 seconds from natural language: 9-category ₹8,00,000 budget, 8 verified milestone tasks, and authentic catering menus.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <Link
+                  href="/create"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 text-white text-xs font-bold shadow-lg flex items-center space-x-1.5 transition-transform hover:scale-105"
+                >
+                  <span>Build This Plan</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Connected Live Metrics Strip */}
+          <div className="p-4 sm:p-6 bg-white dark:bg-[#141420] border-t border-slate-200 dark:border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Metric 1 */}
+              <div className="p-4 rounded-xl bg-violet-50/70 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50">
+                <span className="text-xs font-bold text-violet-700 dark:text-violet-300">Total Event Budget</span>
+                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">₹8,00,000</div>
+                <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
+                  ₹1,70,000 paid advances • ₹6,30,000 remaining
+                </div>
+              </div>
+
+              {/* Metric 2 */}
+              <div className="p-4 rounded-xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/50">
+                <span className="text-xs font-bold text-pink-700 dark:text-pink-300">Timeline Milestones</span>
+                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">37% Done</div>
+                <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
+                  3 of 8 critical deliverables completed
+                </div>
+              </div>
+
+              {/* Metric 3 */}
+              <div className="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
+                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Vendor Commitments</span>
+                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">4 Booked</div>
+                <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
+                  Venue, Caterer, Photo & Decor locked
+                </div>
+              </div>
+            </div>
+
+            {/* Quick AI Tip Ribbon */}
+            <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-pink-500/10 border border-violet-500/30 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5 text-xs">
+                <Sparkles className="w-4 h-4 text-violet-500 shrink-0" />
+                <span className="text-slate-800 dark:text-slate-200 font-medium">
+                  <strong className="text-violet-700 dark:text-violet-300">Eventora AI Suggestion:</strong> Replaced exotic blooms with local marigolds & rajnigandha — saved ₹28,000 in decor budget.
+                </span>
+              </div>
+              <Link
+                href="/budget"
+                className="text-xs font-bold text-violet-700 dark:text-violet-300 hover:underline flex items-center space-x-1 shrink-0 ml-3"
+              >
+                <span>View Budget</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
