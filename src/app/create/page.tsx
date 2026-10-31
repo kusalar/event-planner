@@ -9,6 +9,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { EventType } from '@/types';
+import { EVENT_PRESETS, EventPreset } from '@/data/eventPresets';
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -65,56 +66,21 @@ export default function CreateEventPage() {
   const [rawPrompt, setRawPrompt] = useState(prefilledData?.rawPrompt || '');
 
   // Quick Preset Templates
-  const handleApplyPreset = (presetType: 'wedding' | 'corporate' | 'birthday' | 'fest') => {
-    if (presetType === 'wedding') {
-      setEventType('wedding');
-      setTitle("Aditi & Rohan's Bengali Wedding");
-      setLocation("Kolkata, West Bengal");
-      setDate("2027-02-14");
-      setDuration("2-Day Celebration");
-      setGuestCount("300");
-      setTotalBudget("800000");
-      setTheme("Traditional Rajbari Royalty with Terracotta & Marigold");
-      setFoodPreferences("Authentic Bengali Feast (Bhetki Paturi, Kosha Mangsho, Mishti Doi)");
-      setSpecialRequirements("Live Shehnai & Baul musicians, eco-friendly clay decor");
-      setRawPrompt("I want to organize a Bengali wedding in Kolkata for 300 guests with a budget of ₹8 lakh. Traditional decorations and Bengali cuisine.");
-    } else if (presetType === 'corporate') {
-      setEventType('corporate');
-      setTitle("NexGen AI Conclave 2027");
-      setLocation("Whitefield, Bengaluru");
-      setDate("2027-05-18");
-      setDuration("Full Day Summit");
-      setGuestCount("450");
-      setTotalBudget("1200000");
-      setTheme("Futuristic Cyber Minimalist with Interactive Demo Pods");
-      setFoodPreferences("Continental & Pan-Asian Buffet, Live Espresso Bar");
-      setSpecialRequirements("High-speed fiber connectivity, dual 4K LED backdrops, lapel mics");
-      setRawPrompt("Plan a corporate AI conclave in Bengaluru for 450 guests with ₹12L budget, keynote stages, demo pods, and continental catering.");
-    } else if (presetType === 'birthday') {
-      setEventType('birthday');
-      setTitle("Aria's 1st Fairytale Birthday");
-      setLocation("South Delhi, Delhi");
-      setDate("2027-03-22");
-      setDuration("Evening Celebration (4 Hours)");
-      setGuestCount("80");
-      setTotalBudget("250000");
-      setTheme("Pastel Enchanted Forest & Fairies");
-      setFoodPreferences("Kid-friendly sliders, pasta station, multi-tier custom cake");
-      setSpecialRequirements("Professional magician, balloon sculptor, return gift hampers");
-      setRawPrompt("Organize a 1st birthday party for 80 guests in Delhi with ₹2.5 lakh budget, pastel enchanted forest theme, and entertainment.");
-    } else if (presetType === 'fest') {
-      setEventType('college_fest');
-      setTitle("Ignite 2027 Inter-College Cultural Fest");
-      setLocation("Mumbai, Maharashtra");
-      setDate("2027-04-10");
-      setDuration("3-Day College Festival");
-      setGuestCount("1200");
-      setTotalBudget("1500000");
-      setTheme("Retro Neon Street Carnival");
-      setFoodPreferences("Street food stalls, chaat bazaar, food trucks");
-      setSpecialRequirements("Concert stage, sound line-array rigs, celebrity DJ night");
-      setRawPrompt("Plan a 3-day college cultural fest in Mumbai for 1200 students with ₹15L budget, concert stage, and food street.");
-    }
+  const handleApplyPreset = (presetType: EventPreset['id']) => {
+    const preset = EVENT_PRESETS[presetType];
+    if (!preset) return;
+
+    setEventType(preset.eventType);
+    setTitle(preset.title);
+    setLocation(preset.location);
+    setDate(preset.date);
+    setDuration(preset.duration);
+    setGuestCount(preset.guestCount);
+    setTotalBudget(preset.totalBudget);
+    setTheme(preset.theme);
+    setFoodPreferences(preset.foodPreferences);
+    setSpecialRequirements(preset.specialRequirements);
+    setRawPrompt(preset.rawPrompt);
   };
 
   const handleGeneratePlan = async () => {

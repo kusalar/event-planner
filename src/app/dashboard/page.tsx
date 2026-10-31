@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useEventContext } from '@/context/EventContext';
+import { calculateDaysRemaining } from '@/lib/formatters';
 import {
   Sparkles,
   Wallet,
@@ -49,19 +50,20 @@ export default function DashboardPage() {
   const [vendorModalOpen, setVendorModalOpen] = useState(false);
   const [optimizerModalOpen, setOptimizerModalOpen] = useState(false);
   const [invitationModalOpen, setInvitationModalOpen] = useState(false);
-  const [greeting] = useState(() => {
-    if (typeof window === 'undefined') return 'Welcome';
+  const greeting = useMemo(() => {
     const h = new Date().getHours();
     return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-  });
+  }, []);
 
-  const [daysRemaining] = useState(() => {
-    if (typeof window === 'undefined' || !currentEvent?.date) return 106;
-    const eventDateObj = new Date(currentEvent.date);
-    const now = new Date();
-    const diffTime = eventDateObj.getTime() - now.getTime();
-    return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-  });
+  const daysRemaining = useMemo(() => {
+    if (!currentEvent?.date) return 0;
+    return calculateDaysRemaining(currentEvent.date);
+  }, [currentEvent]);
+
+  const pendingTasks = useMemo(
+    () => timelineTasks.filter((t) => !t.isCompleted).slice(0, 4),
+    [timelineTasks]
+  );
 
   if (!currentEvent) {
     return (
@@ -78,8 +80,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const pendingTasks = timelineTasks.filter((t) => !t.isCompleted).slice(0, 4);
 
   return (
     <div className="flex-1 bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
@@ -153,14 +153,14 @@ export default function DashboardPage() {
       {/* Primary KPI Grid (4 Metrics Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Metric 1: Total Budget */}
-        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-200 mb-2 font-semibold">
+        <div className="p-5 rounded-2xl glass-card border border-slate-200 dark:border-slate-800/80 shadow-md hover:border-violet-500/30 transition-all">
+          <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-200 mb-2 font-bold tracking-tight">
             <span>Total Planned Budget</span>
             <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-300 flex items-center justify-center font-bold">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-950 dark:text-white tracking-tight mt-1">
+          <div className="text-3xl font-black text-violet-600 dark:text-white tracking-tight mt-1">
             {formatCurrency(currentEvent.totalBudget)}
           </div>
           <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">

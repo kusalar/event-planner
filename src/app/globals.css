@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -101,21 +101,21 @@ body {
   color: #ffffff;
 }
 
-/* Ensure all text inside dark cards and dark containers has crystal clear contrast */
-.dark .glass-card h1,
-.dark .glass-card h2,
-.dark .glass-card h3,
-.dark .glass-card h4,
-.dark .glass-card strong,
-.dark .glass-card b {
-  color: #ffffff !important;
+/* High Contrast Glassmorphism Cards: Base typography defaults without overriding semantic text utilities */
+.dark .glass-card h1:not([class*="text-"]),
+.dark .glass-card h2:not([class*="text-"]),
+.dark .glass-card h3:not([class*="text-"]),
+.dark .glass-card h4:not([class*="text-"]),
+.dark .glass-card strong:not([class*="text-"]),
+.dark .glass-card b:not([class*="text-"]) {
+  color: #ffffff;
 }
 
-.dark .glass-card p {
+.dark .glass-card p:not([class*="text-"]) {
   color: #e2e8f0;
 }
 
-/* Guard against dark navy or dark gray text showing up on dark backgrounds */
+/* Guard against dark navy or dark gray text showing up on dark backgrounds while allowing semantic colors */
 .dark .glass-card .text-slate-950,
 .dark .glass-card .text-slate-900,
 .dark .glass-card .text-slate-800,
@@ -138,6 +138,23 @@ body {
 .dark .glass-card .text-slate-500,
 .dark .glass-card .text-gray-500 {
   color: #94a3b8 !important;
+}
+
+/* Guard icon badge backgrounds inside dark cards against low contrast white/light fallbacks without overriding icon color */
+.dark .glass-card .bg-violet-100 {
+  background-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.dark .glass-card .bg-pink-100 {
+  background-color: rgba(236, 72, 153, 0.2) !important;
+}
+
+.dark .glass-card .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+.dark .glass-card .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.2) !important;
 }
 
 /* Custom scrollbar */

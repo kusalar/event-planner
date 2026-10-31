@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useEventContext } from '@/context/EventContext';
 import {
   Wallet,
@@ -49,6 +49,35 @@ export default function BudgetPage() {
   const [newCatName, setNewCatName] = useState('');
   const [newCatAmount, setNewCatAmount] = useState('');
 
+  // Calculate spending per category
+  const categoryAnalytics = useMemo(() => {
+    return budgetCategories.map((cat) => {
+      const spent = expenses
+        .filter((e) => e.categoryId === cat.id || e.categoryName.toLowerCase() === cat.name.toLowerCase())
+        .reduce((sum, e) => sum + e.amount, 0);
+      const remaining = Math.max(0, cat.allocatedAmount - spent);
+      const percent = cat.allocatedAmount > 0 ? Math.round((spent / cat.allocatedAmount) * 100) : 0;
+      return {
+        id: cat.id,
+        name: cat.name,
+        allocated: cat.allocatedAmount,
+        spent,
+        remaining,
+        percent,
+        color: cat.color || '#8b5cf6',
+        isOverBudget: spent > cat.allocatedAmount,
+      };
+    });
+  }, [budgetCategories, expenses]);
+
+  // Filtered expenses list
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((e) => {
+      if (activeCategoryFilter === 'all') return true;
+      return e.categoryId === activeCategoryFilter || e.categoryName === activeCategoryFilter;
+    });
+  }, [expenses, activeCategoryFilter]);
+
   if (!currentEvent) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
@@ -56,31 +85,6 @@ export default function BudgetPage() {
       </div>
     );
   }
-
-  // Calculate spending per category
-  const categoryAnalytics = budgetCategories.map((cat) => {
-    const spent = expenses
-      .filter((e) => e.categoryId === cat.id || e.categoryName.toLowerCase() === cat.name.toLowerCase())
-      .reduce((sum, e) => sum + e.amount, 0);
-    const remaining = Math.max(0, cat.allocatedAmount - spent);
-    const percent = cat.allocatedAmount > 0 ? Math.round((spent / cat.allocatedAmount) * 100) : 0;
-    return {
-      id: cat.id,
-      name: cat.name,
-      allocated: cat.allocatedAmount,
-      spent,
-      remaining,
-      percent,
-      color: cat.color || '#8b5cf6',
-      isOverBudget: spent > cat.allocatedAmount,
-    };
-  });
-
-  // Filtered expenses list
-  const filteredExpenses = expenses.filter((e) => {
-    if (activeCategoryFilter === 'all') return true;
-    return e.categoryId === activeCategoryFilter || e.categoryName === activeCategoryFilter;
-  });
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +136,7 @@ export default function BudgetPage() {
           <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
             Total Planned Budget
           </span>
-          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
+          <div className="text-3xl font-black text-violet-600 dark:text-white mt-1">
             {formatCurrency(currentEvent.totalBudget)}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">100% Target Cap</div>

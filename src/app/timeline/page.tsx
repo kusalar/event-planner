@@ -123,7 +123,7 @@ export default function TimelinePage() {
           <span className="text-xs font-bold text-slate-600 dark:text-slate-200 uppercase tracking-wider">
             Total Completion Velocity
           </span>
-          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
+          <div className="text-3xl font-black text-violet-600 dark:text-white mt-1">
             {taskCompletionPercentage}% Complete
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">

@@ -92,7 +92,7 @@ export default function VendorsPage() {
           <span className="text-xs text-slate-600 dark:text-slate-200 font-bold uppercase tracking-wider">
             Total Quoted Commitments
           </span>
-          <div className="text-3xl font-black text-slate-950 dark:text-white mt-1">
+          <div className="text-3xl font-black text-violet-600 dark:text-white mt-1">
             {formatCurrency(totalVendorCommitted)}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">Across {vendors.length} vendor partners</div>

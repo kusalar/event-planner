@@ -66,7 +66,7 @@ export default function LandingPage() {
         </div>
 
         {/* Main Headline */}
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl mx-auto leading-[1.15] mb-6 text-slate-950 dark:text-white">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl mx-auto leading-[1.15] mb-6 text-slate-900 dark:text-white">
           Turn Any Event Dream into a{' '}
           <span className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 dark:from-violet-400 dark:via-fuchsia-400 dark:to-pink-400 bg-clip-text text-transparent">
             Flawless Master Plan
@@ -223,7 +223,7 @@ export default function LandingPage() {
               {/* Metric 1 */}
               <div className="p-4 rounded-xl bg-violet-50/70 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50">
                 <span className="text-xs font-bold text-violet-700 dark:text-violet-300">Total Event Budget</span>
-                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">₹8,00,000</div>
+                <div className="text-2xl font-black text-violet-700 dark:text-white mt-1">₹8,00,000</div>
                 <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
                   ₹1,70,000 paid advances • ₹6,30,000 remaining
                 </div>
@@ -232,7 +232,7 @@ export default function LandingPage() {
               {/* Metric 2 */}
               <div className="p-4 rounded-xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/50">
                 <span className="text-xs font-bold text-pink-700 dark:text-pink-300">Timeline Milestones</span>
-                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">37% Done</div>
+                <div className="text-2xl font-black text-pink-700 dark:text-white mt-1">37% Done</div>
                 <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
                   3 of 8 critical deliverables completed
                 </div>
@@ -241,7 +241,7 @@ export default function LandingPage() {
               {/* Metric 3 */}
               <div className="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50">
                 <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Vendor Commitments</span>
-                <div className="text-2xl font-black text-slate-950 dark:text-white mt-1">4 Booked</div>
+                <div className="text-2xl font-black text-emerald-700 dark:text-white mt-1">4 Booked</div>
                 <div className="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
                   Venue, Caterer, Photo & Decor locked
                 </div>
