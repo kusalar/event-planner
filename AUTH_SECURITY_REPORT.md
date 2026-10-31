@@ -155,3 +155,4 @@ Security Verdict: ALL 8 AUTHENTICATION & SECURITY REQUIREMENTS PASSED
 - **Type Checking:** All routes and TypeScript interfaces strongly typed.
 - **Production Build:** `npm run build` — **18/18 routes statically optimized or server-rendered**.
 - **No Secret Leakage:** Neither `SUPABASE_SERVICE_ROLE_KEY` nor server `GEMINI_API_KEY` are exposed to client bundles. Only `NEXT_PUBLIC_` variables are included client-side.
+
