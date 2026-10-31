@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security (RLS)
+-- Enable Row Level Security (RLS) on ALL tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.budget_categories ENABLE ROW LEVEL SECURITY;
@@ -134,7 +134,60 @@ ALTER TABLE public.guests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ideas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
--- Setup Sample RLS Policies
-CREATE POLICY "Users can manage own profile" ON public.profiles FOR ALL USING (auth.uid() = id);
-CREATE POLICY "Users can manage own events" ON public.events FOR ALL USING (auth.uid() = user_id);
+-- Drop any existing sample policies to ensure idempotency
+DROP POLICY IF EXISTS "Users can manage own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can manage own events" ON public.events;
+DROP POLICY IF EXISTS "Users can manage own budget categories" ON public.budget_categories;
+DROP POLICY IF EXISTS "Users can manage own expenses" ON public.expenses;
+DROP POLICY IF EXISTS "Users can manage own timeline tasks" ON public.timeline_tasks;
+DROP POLICY IF EXISTS "Users can manage own vendors" ON public.vendors;
+DROP POLICY IF EXISTS "Users can manage own guests" ON public.guests;
+DROP POLICY IF EXISTS "Users can manage own ideas" ON public.ideas;
+DROP POLICY IF EXISTS "Users can manage own chat messages" ON public.chat_messages;
+
+-- 1. Profiles Policy (Strict 1:1 user match)
+CREATE POLICY "Users can manage own profile" ON public.profiles
+  FOR ALL USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- 2. Events Policy (Only event creator can read, insert, update, delete)
+CREATE POLICY "Users can manage own events" ON public.events
+  FOR ALL USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- 3. Budget Categories Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own budget categories" ON public.budget_categories
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 4. Expenses Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own expenses" ON public.expenses
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 5. Timeline Tasks Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own timeline tasks" ON public.timeline_tasks
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 6. Vendors Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own vendors" ON public.vendors
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 7. Guests Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own guests" ON public.guests
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 8. Ideas Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own ideas" ON public.ideas
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
+-- 9. Chat Messages Policy (Cascaded event ownership check)
+CREATE POLICY "Users can manage own chat messages" ON public.chat_messages
+  FOR ALL USING (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()))
+  WITH CHECK (event_id IN (SELECT id FROM public.events WHERE user_id = auth.uid()));
+
 

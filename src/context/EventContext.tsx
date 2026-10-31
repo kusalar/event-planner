@@ -101,102 +101,152 @@ interface EventContextType {
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'eventora_app_state_v2';
+import { useAuth } from '@/context/AuthContext';
 
-function getSavedState() {
+const DEMO_STORAGE_KEY = 'eventora_demo_sandbox_v1';
+
+function getUserStorageKey(userId: string | null, isDemo: boolean): string | null {
+  if (userId) return `eventora_user_state_${userId}`;
+  if (isDemo) return DEMO_STORAGE_KEY;
+  return null;
+}
+
+function loadStateForContext(userId: string | null, isDemo: boolean) {
   if (typeof window === 'undefined') return null;
+  const key = getUserStorageKey(userId, isDemo);
+  if (!key) return null;
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const saved = localStorage.getItem(key);
     if (saved) return JSON.parse(saved);
   } catch (e) {
-    console.warn('Failed to parse saved state:', e);
+    console.warn('Failed to parse saved state for key:', key, e);
   }
   return null;
 }
 
 export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isDemoMode } = useAuth();
   const isLoadedRef = React.useRef(false);
 
-  const [events, setEvents] = useState<EventItem[]>(() => {
-    const saved = getSavedState();
-    return saved?.events?.length ? saved.events : sampleEvents;
-  });
-
-  const [currentEventId, setCurrentEventId] = useState<string>(() => {
-    const saved = getSavedState();
-    return saved?.currentEventId || sampleEvents[0].id;
-  });
-
-  const [categoriesMap, setCategoriesMap] = useState<Record<string, BudgetCategory[]>>(() => {
-    const saved = getSavedState();
-    return saved?.categoriesMap || sampleBudgetCategories;
-  });
-
-  const [expensesMap, setExpensesMap] = useState<Record<string, Expense[]>>(() => {
-    const saved = getSavedState();
-    return saved?.expensesMap || sampleExpenses;
-  });
-
-  const [tasksMap, setTasksMap] = useState<Record<string, TimelineTask[]>>(() => {
-    const saved = getSavedState();
-    return saved?.tasksMap || sampleTimelineTasks;
-  });
-
-  const [vendorsMap, setVendorsMap] = useState<Record<string, Vendor[]>>(() => {
-    const saved = getSavedState();
-    return saved?.vendorsMap || sampleVendors;
-  });
-
-  const [guestsMap, setGuestsMap] = useState<Record<string, Guest[]>>(() => {
-    const saved = getSavedState();
-    return saved?.guestsMap || sampleGuests;
-  });
-
-  const [ideasMap, setIdeasMap] = useState<Record<string, CreativeIdea[]>>(() => {
-    const saved = getSavedState();
-    return saved?.ideasMap || sampleIdeas;
-  });
-
-  const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>(() => {
-    const saved = getSavedState();
-    return (
-      saved?.chatMap || {
-        evt_bengali_wedding: [
-          {
-            id: 'msg_welcome',
-            eventId: 'evt_bengali_wedding',
-            sender: 'assistant',
-            content: `Hello Priya! I'm your **Eventora AI** personal wedding director for **Aditi & Rohan's Royal Bengali Wedding**.\n\nI have structured your 2-day wedding plan with a budget of ₹8,00,000, 300 guests, and key cultural arrangements in Kolkata. How can I assist your planning today?`,
-            timestamp: '2026-10-31T12:00:00.000Z',
-            isLiveModel: false,
-          },
-        ],
-      }
-    );
-  });
+  // Active state
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [currentEventId, setCurrentEventId] = useState<string>('');
+  const [categoriesMap, setCategoriesMap] = useState<Record<string, BudgetCategory[]>>({});
+  const [expensesMap, setExpensesMap] = useState<Record<string, Expense[]>>({});
+  const [tasksMap, setTasksMap] = useState<Record<string, TimelineTask[]>>({});
+  const [vendorsMap, setVendorsMap] = useState<Record<string, Vendor[]>>({});
+  const [guestsMap, setGuestsMap] = useState<Record<string, Guest[]>>({});
+  const [ideasMap, setIdeasMap] = useState<Record<string, CreativeIdea[]>>({});
+  const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>({});
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
-    const saved = getSavedState();
-    return saved?.userProfile || initialProfile;
+    return initialProfile;
   });
 
-  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
-    const saved = getSavedState();
-    return saved?.theme || 'dark';
-  });
+  const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
 
-  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
-    const saved = getSavedState();
-    return saved?.geminiApiKey || '';
-  });
-
+  // Synchronize state when authentication or demo status changes
   useEffect(() => {
-    isLoadedRef.current = true;
-  }, []);
+    const timer = setTimeout(() => {
+      if (user) {
+        const saved = loadStateForContext(user.id, false);
+        const profile: UserProfile = {
+          id: user.id,
+          name: (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'Eventora Planner',
+          email: user.email || '',
+          currency: (saved?.userProfile?.currency as CurrencyCode) || 'INR',
+          avatar: (user.user_metadata?.avatar_url as string) || undefined,
+        };
+        setUserProfile(profile);
 
-  // Sync to localStorage
+        if (saved && saved.events) {
+          setEvents(saved.events);
+          setCurrentEventId(saved.currentEventId || (saved.events[0]?.id || ''));
+          setCategoriesMap(saved.categoriesMap || {});
+          setExpensesMap(saved.expensesMap || {});
+          setTasksMap(saved.tasksMap || {});
+          setVendorsMap(saved.vendorsMap || {});
+          setGuestsMap(saved.guestsMap || {});
+          setIdeasMap(saved.ideasMap || {});
+          setChatMap(saved.chatMap || {});
+          if (saved.theme) setThemeState(saved.theme);
+          if (saved.geminiApiKey) setGeminiApiKey(saved.geminiApiKey);
+        } else {
+          // New authenticated user starts clean (isolated from other users' events)
+          setEvents([]);
+          setCurrentEventId('');
+          setCategoriesMap({});
+          setExpensesMap({});
+          setTasksMap({});
+          setVendorsMap({});
+          setGuestsMap({});
+          setIdeasMap({});
+          setChatMap({});
+        }
+      } else if (isDemoMode) {
+        // Demo sandbox mode: load curated sample events
+        const saved = loadStateForContext(null, true);
+        if (saved && saved.events) {
+          setEvents(saved.events);
+          setCurrentEventId(saved.currentEventId || sampleEvents[0].id);
+          setCategoriesMap(saved.categoriesMap || sampleBudgetCategories);
+          setExpensesMap(saved.expensesMap || sampleExpenses);
+          setTasksMap(saved.tasksMap || sampleTimelineTasks);
+          setVendorsMap(saved.vendorsMap || sampleVendors);
+          setGuestsMap(saved.guestsMap || sampleGuests);
+          setIdeasMap(saved.ideasMap || sampleIdeas);
+          setChatMap(saved.chatMap || {});
+          setUserProfile(saved.userProfile || initialProfile);
+        } else {
+          setEvents(sampleEvents);
+          setCurrentEventId(sampleEvents[0].id);
+          setCategoriesMap(sampleBudgetCategories);
+          setExpensesMap(sampleExpenses);
+          setTasksMap(sampleTimelineTasks);
+          setVendorsMap(sampleVendors);
+          setGuestsMap(sampleGuests);
+          setIdeasMap(sampleIdeas);
+          setUserProfile(initialProfile);
+          setChatMap({
+            evt_bengali_wedding: [
+              {
+                id: 'msg_welcome',
+                eventId: 'evt_bengali_wedding',
+                sender: 'assistant',
+                content: `Hello Priya! I'm your **Eventora AI** personal wedding director for **Aditi & Rohan's Royal Bengali Wedding**.\n\nI have structured your 2-day wedding plan with a budget of ₹8,00,000, 300 guests, and key cultural arrangements in Kolkata. How can I assist your planning today?`,
+                timestamp: '2026-10-31T12:00:00.000Z',
+                isLiveModel: false,
+              },
+            ],
+          });
+        }
+      } else {
+        // Not authenticated & not demo
+        setEvents([]);
+        setCurrentEventId('');
+        setCategoriesMap({});
+        setExpensesMap({});
+        setTasksMap({});
+        setVendorsMap({});
+        setGuestsMap({});
+        setIdeasMap({});
+        setChatMap({});
+      }
+
+      isLoadedRef.current = true;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [user, isDemoMode]);
+
+  // Persist state to the active user's isolated storage
   useEffect(() => {
     if (!isLoadedRef.current) return;
+    const currentUserId = user?.id || null;
+    const key = getUserStorageKey(currentUserId, isDemoMode);
+    if (!key) return;
+
     try {
       const stateToSave = {
         events,
@@ -212,11 +262,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         theme,
         geminiApiKey,
       };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+      localStorage.setItem(key, JSON.stringify(stateToSave));
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
     }
   }, [
+    user,
+    isDemoMode,
     events,
     currentEventId,
     categoriesMap,
@@ -649,7 +701,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetToSampleData = () => {
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    const key = getUserStorageKey(user?.id || null, isDemoMode);
+    if (key && typeof window !== 'undefined') {
+      localStorage.removeItem(key);
+    }
     setEvents(sampleEvents);
     setCurrentEventId(sampleEvents[0].id);
     setCategoriesMap(sampleBudgetCategories);

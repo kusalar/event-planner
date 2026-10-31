@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
 import { EventProvider } from '@/context/EventContext';
+import { AuthGuard } from '@/components/AuthGuard';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
@@ -31,11 +33,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${sansFont.variable} ${serifFont.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased selection:bg-violet-500 selection:text-white font-sans">
-        <EventProvider>
-          <Navbar />
-          <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
-        </EventProvider>
+        <AuthProvider>
+          <EventProvider>
+            <Navbar />
+            <AuthGuard>
+              <main className="flex-1 flex flex-col">{children}</main>
+            </AuthGuard>
+            <Footer />
+          </EventProvider>
+        </AuthProvider>
       </body>
     </html>
   );

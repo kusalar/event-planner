@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import {
   Settings,
   Key,
@@ -14,11 +16,16 @@ import {
   RefreshCw,
   Zap,
   Download,
+  LogOut,
+  UserCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { CurrencyCode } from '@/types';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, isDemoMode, signOut } = useAuth();
   const {
     currentEvent,
     updateEvent,
@@ -353,7 +360,66 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* 4. Supabase DB & SQL Migration Info */}
+      {/* 4. User Account & Authentication Status */}
+      <div className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-xs space-y-4">
+        <div className="flex items-center space-x-3 mb-2">
+          <ShieldCheck className="w-5 h-5 text-violet-500" />
+          <h3 className="font-bold text-sm text-slate-900 dark:text-white">Account & Authentication</h3>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+          <div>
+            <div className="font-bold text-sm text-slate-900 dark:text-white">
+              {isAuthenticated ? userProfile.name : isDemoMode ? 'Demo Sandbox Guest' : 'Anonymous Guest'}
+            </div>
+            <div className="text-slate-500 text-xs mt-0.5">
+              {isAuthenticated ? user?.email : isDemoMode ? 'Operating in isolated offline demo mode' : 'Not signed in'}
+            </div>
+            <div className="mt-2">
+              {isAuthenticated ? (
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80">
+                  ✓ Supabase Authenticated (Row Level Security Active)
+                </span>
+              ) : isDemoMode ? (
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/80">
+                  ⚡ Demo Sandbox Active
+                </span>
+              ) : (
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  Unauthenticated
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  await signOut();
+                  router.push('/auth');
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 font-bold text-xs flex items-center space-x-1.5 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push('/auth')}
+                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs flex items-center space-x-1.5 transition-all shadow-md shadow-violet-500/20"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Sign In to Account</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Supabase DB & SQL Migration Info */}
       <div className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center space-x-3 mb-2">
           <Database className="w-5 h-5 text-emerald-500" />
