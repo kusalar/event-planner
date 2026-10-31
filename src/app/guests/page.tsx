@@ -195,6 +195,7 @@ export default function GuestsPage() {
                     <td className="py-3 font-bold text-slate-900 dark:text-white">{guest.name}</td>
                     <td className="py-3">
                       <select
+                        aria-label={`Update RSVP status for ${guest.name}`}
                         value={guest.rsvpStatus}
                         onChange={(e) => updateGuest(guest.id, { rsvpStatus: e.target.value as RSVPStatus })}
                         className={`text-[10px] font-bold uppercase rounded-lg px-2 py-0.5 outline-none border cursor-pointer ${
@@ -223,6 +224,7 @@ export default function GuestsPage() {
                         onClick={() => deleteGuest(guest.id)}
                         className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
                         title="Remove guest"
+                        aria-label={`Remove guest ${guest.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

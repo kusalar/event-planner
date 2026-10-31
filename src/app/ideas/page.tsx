@@ -14,8 +14,10 @@ import {
   Gift,
   Music,
   Palette,
+  X,
 } from 'lucide-react';
 import { IdeaCategory } from '@/types';
+import { Modal } from '@/components/ui/Modal';
 import { InvitationModal } from '@/components/InvitationModal';
 
 export default function IdeasStudioPage() {
@@ -184,69 +186,82 @@ export default function IdeasStudioPage() {
       </div>
 
       {/* Add Custom Idea Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl glass-card p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add Custom Concept</h3>
-            <form onSubmit={handleCreateIdea} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Concept Category</label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value as IdeaCategory)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
-                >
-                  <option value="decor">Decor & Ambience</option>
-                  <option value="menu">Menu & Catering</option>
-                  <option value="entertainment">Entertainment & Games</option>
-                  <option value="gifts">Favors & Return Gifts</option>
-                  <option value="photography">Photography Shotlists</option>
-                </select>
-              </div>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        titleId="custom-idea-modal-title"
+        maxWidth="max-w-md"
+      >
+        <button
+          type="button"
+          onClick={() => setShowAddModal(false)}
+          aria-label="Close dialog"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
 
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Scented Tuberose Chandelier Entrance"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Description *</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Describe your creative setup, logistics, and visual aesthetic..."
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-md shadow-violet-500/25"
-                >
-                  Save Concept
-                </button>
-              </div>
-            </form>
+        <h3 id="custom-idea-modal-title" className="text-lg font-bold text-slate-900 dark:text-white mb-4">Add Custom Concept</h3>
+        <form onSubmit={handleCreateIdea} className="space-y-4 text-xs">
+          <div>
+            <label htmlFor="custom-idea-category" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Concept Category</label>
+            <select
+              id="custom-idea-category"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value as IdeaCategory)}
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
+            >
+              <option value="decor">Decor & Ambience</option>
+              <option value="menu">Menu & Catering</option>
+              <option value="entertainment">Entertainment & Games</option>
+              <option value="gifts">Favors & Return Gifts</option>
+              <option value="photography">Photography Shotlists</option>
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label htmlFor="custom-idea-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Title *</label>
+            <input
+              id="custom-idea-title"
+              type="text"
+              required
+              placeholder="e.g. Scented Tuberose Chandelier Entrance"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="custom-idea-desc" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Description *</label>
+            <textarea
+              id="custom-idea-desc"
+              rows={3}
+              required
+              placeholder="Describe your creative setup, logistics, and visual aesthetic..."
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold shadow-md shadow-violet-500/25"
+            >
+              Save Concept
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Invitation Modal */}
       <InvitationModal isOpen={invitationModalOpen} onClose={() => setInvitationModalOpen(false)} />

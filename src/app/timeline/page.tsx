@@ -178,6 +178,7 @@ export default function TimelinePage() {
         <div className="flex items-center space-x-2 text-xs">
           <span className="text-slate-400">Priority:</span>
           <select
+            aria-label="Filter tasks by priority"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
             className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium outline-none"
@@ -237,6 +238,7 @@ export default function TimelinePage() {
                           <div className="flex items-start space-x-3">
                             <button
                               onClick={() => handleToggle(task.id, task.isCompleted)}
+                              aria-label={task.isCompleted ? `Mark ${task.title} as incomplete` : `Mark ${task.title} as completed`}
                               className="mt-0.5 text-slate-400 hover:text-emerald-500 transition-colors"
                             >
                               {task.isCompleted ? (
@@ -283,6 +285,7 @@ export default function TimelinePage() {
                               onClick={() => deleteTimelineTask(task.id)}
                               className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
                               title="Delete task"
+                              aria-label={`Delete task ${task.title}`}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

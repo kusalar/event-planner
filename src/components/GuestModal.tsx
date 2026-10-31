@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
+import { Modal } from '@/components/ui/Modal';
 import { X, UserPlus } from 'lucide-react';
 import { RSVPStatus } from '@/types';
 
@@ -48,31 +49,38 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-md rounded-2xl glass-card p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      titleId="guest-modal-title"
+      maxWidth="max-w-md"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close dialog"
+        className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-        <div className="flex items-center space-x-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <UserPlus className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add Guest / RSVP</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Manage invitations and dietary needs</p>
-          </div>
+      <div className="flex items-center space-x-3 mb-5">
+        <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
+          <UserPlus className="w-5 h-5" />
         </div>
+        <div>
+          <h3 id="guest-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">Add Guest / RSVP</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Manage invitations and dietary needs</p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="guest-name" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Guest Name *
             </label>
             <input
+              id="guest-name"
               type="text"
               required
               placeholder="e.g. Sagnik Roy & Family"
@@ -84,10 +92,11 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="guest-rsvp-status" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 RSVP Status *
               </label>
               <select
+                id="guest-rsvp-status"
                 value={rsvpStatus}
                 onChange={(e) => setRsvpStatus(e.target.value as RSVPStatus)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white outline-none"
@@ -99,10 +108,11 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="guest-plus-ones" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Additional Guests (Plus Ones)
               </label>
               <input
+                id="guest-plus-ones"
                 type="number"
                 min="0"
                 max="10"
@@ -115,10 +125,11 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="guest-phone" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Phone Number
               </label>
               <input
+                id="guest-phone"
                 type="tel"
                 placeholder="+91 98300 00000"
                 value={phone}
@@ -128,10 +139,11 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="guest-dietary" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Dietary Preference
               </label>
               <select
+                id="guest-dietary"
                 value={dietaryPreference}
                 onChange={(e) => setDietaryPreference(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white outline-none"
@@ -147,10 +159,11 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="guest-table" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Table / Zone Assignment (Optional)
             </label>
             <input
+              id="guest-table"
               type="text"
               placeholder="e.g. VIP Table 1, Bride's Friends, Family Stage Left"
               value={tableAssigned}
@@ -175,8 +188,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

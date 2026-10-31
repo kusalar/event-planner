@@ -164,11 +164,12 @@ export default function SettingsPage() {
 
         <div className="space-y-3">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="settings-gemini-key" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Enter Your Gemini API Key
             </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
+                id="settings-gemini-key"
                 type="password"
                 placeholder="AIzaSy..."
                 value={keyInput}
@@ -232,8 +233,9 @@ export default function SettingsPage() {
         <form onSubmit={handleSaveEventDetails} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Title *</label>
+              <label htmlFor="settings-event-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Title *</label>
               <input
+                id="settings-event-title"
                 type="text"
                 required
                 value={title}
@@ -243,8 +245,9 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Date *</label>
+              <label htmlFor="settings-event-date" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Date *</label>
               <input
+                id="settings-event-date"
                 type="date"
                 required
                 value={date}
@@ -256,8 +259,9 @@ export default function SettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Location *</label>
+              <label htmlFor="settings-event-location" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Location *</label>
               <input
+                id="settings-event-location"
                 type="text"
                 required
                 value={location}
@@ -267,8 +271,9 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Guests *</label>
+              <label htmlFor="settings-event-guests" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Guests *</label>
               <input
+                id="settings-event-guests"
                 type="number"
                 required
                 min="10"
@@ -279,10 +284,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="settings-event-budget" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Total Budget (₹) *
               </label>
               <input
+                id="settings-event-budget"
                 type="number"
                 required
                 min="10000"
@@ -318,8 +324,10 @@ export default function SettingsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Preferred Currency</label>
+            <label htmlFor="settings-currency-select" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Preferred Currency</label>
             <select
+              id="settings-currency-select"
+              aria-label="Preferred Currency"
               value={userProfile.currency}
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none"

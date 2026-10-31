@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
+import { Modal } from '@/components/ui/Modal';
 import { X, CheckSquare } from 'lucide-react';
 import { TaskPhase, TaskPriority } from '@/types';
 
@@ -47,31 +48,38 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-md rounded-2xl glass-card p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      titleId="task-modal-title"
+      maxWidth="max-w-md"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close dialog"
+        className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
-        <div className="flex items-center space-x-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <CheckSquare className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add Timeline Milestone</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Schedule critical event deliverables</p>
-          </div>
+      <div className="flex items-center space-x-3 mb-5">
+        <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
+          <CheckSquare className="w-5 h-5" />
         </div>
+        <div>
+          <h3 id="task-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">Add Timeline Milestone</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Schedule critical event deliverables</p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="task-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Task Title *
             </label>
             <input
+              id="task-title"
               type="text"
               required
               placeholder="e.g. Confirm wedding car decoration & driver timing"
@@ -83,10 +91,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="task-phase" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Milestone Phase *
               </label>
               <select
+                id="task-phase"
                 value={phase}
                 onChange={(e) => setPhase(e.target.value as TaskPhase)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white outline-none"
@@ -101,10 +110,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="task-priority" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Priority *
               </label>
               <select
+                id="task-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white outline-none"
@@ -118,10 +128,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="task-deadline" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Deadline Date *
               </label>
               <input
+                id="task-deadline"
                 type="date"
                 required
                 value={deadline}
@@ -131,10 +142,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="task-category" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Category
               </label>
               <input
+                id="task-category"
                 type="text"
                 placeholder="e.g. Venue, Catering, Music"
                 value={category}
@@ -145,10 +157,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="task-description" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Description & Checklist Notes
             </label>
             <textarea
+              id="task-description"
               rows={2}
               placeholder="e.g. Ensure flowers arrive by 7:00 AM before guests arrive"
               value={description}
@@ -173,8 +186,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

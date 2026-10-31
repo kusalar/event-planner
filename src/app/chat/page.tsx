@@ -237,6 +237,7 @@ export default function ChatAssistantPage() {
                       onClick={() => handleCopy(msg.content, msg.id)}
                       className="hover:text-slate-600 dark:hover:text-slate-200 flex items-center space-x-1"
                       title="Copy message"
+                      aria-label="Copy assistant message"
                     >
                       {copiedId === msg.id ? (
                         <>
@@ -288,11 +289,13 @@ export default function ChatAssistantPage() {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           placeholder={`Ask anything about ${currentEvent.title} (e.g. 'How to negotiate venue rate?')...`}
+          aria-label="Message Eventora AI assistant"
           className="flex-1 px-3 py-2 text-xs bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400"
         />
         <button
           type="submit"
           disabled={!inputMessage.trim() || loading}
+          aria-label="Send message"
           className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 text-white font-bold text-xs shadow-md shadow-violet-500/25 transition-all disabled:opacity-40 flex items-center space-x-1.5"
         >
           <span>Send</span>

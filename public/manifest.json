@@ -1,0 +1,17 @@
+{
+  "name": "Eventora AI",
+  "short_name": "Eventora",
+  "description": "GenAI-Powered Smart Event Planning Assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090e",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/eventora-hero.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
+

@@ -282,6 +282,7 @@ export default function BudgetPage() {
               type="text"
               required
               placeholder="Category Name (e.g. Fireworks / Special Permits)"
+              aria-label="Category Name"
               value={newCatName}
               onChange={(e) => setNewCatName(e.target.value)}
               className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none flex-1 min-w-[180px]"
@@ -291,6 +292,7 @@ export default function BudgetPage() {
               required
               min="1000"
               placeholder="Allocated Budget (₹)"
+              aria-label="Allocated Budget"
               value={newCatAmount}
               onChange={(e) => setNewCatAmount(e.target.value)}
               className="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white outline-none w-36"
@@ -376,6 +378,7 @@ export default function BudgetPage() {
           <div className="flex items-center space-x-2 text-xs">
             <span className="text-slate-400">Filter:</span>
             <select
+              aria-label="Filter expenses by category"
               value={activeCategoryFilter}
               onChange={(e) => setActiveCategoryFilter(e.target.value)}
               className="px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium outline-none"
@@ -432,6 +435,7 @@ export default function BudgetPage() {
                         onClick={() => deleteExpense(exp.id)}
                         className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                         title="Delete expense entry"
+                        aria-label={`Delete expense ${exp.title}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

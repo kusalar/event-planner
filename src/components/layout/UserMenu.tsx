@@ -75,6 +75,7 @@ export const UserMenu: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         aria-label="User Account Menu"
+        aria-expanded={isOpen}
       >
         <div className="w-8 h-8 rounded-full ring-2 ring-violet-500/40 overflow-hidden bg-gradient-to-tr from-violet-600 to-pink-500 text-white font-bold text-xs flex items-center justify-center shadow-md">
           {userProfile.avatar ? (

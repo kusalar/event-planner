@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
+import { Modal } from '@/components/ui/Modal';
 import { X, Sparkles, TrendingDown, Check, ShieldAlert } from 'lucide-react';
 
 interface AiOptimizerModalProps {
@@ -72,14 +73,21 @@ export const AiOptimizerModal: React.FC<AiOptimizerModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-2xl rounded-2xl glass-card p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      titleId="ai-optimizer-modal-title"
+      maxWidth="max-w-2xl"
+      contentClassName="max-h-[90vh] overflow-y-auto"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close dialog"
+        className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
         {/* Modal Header */}
         <div className="flex items-center space-x-3 mb-4">
@@ -87,7 +95,7 @@ export const AiOptimizerModal: React.FC<AiOptimizerModalProps> = ({ isOpen, onCl
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 id="ai-optimizer-modal-title" className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>Eventora AI Budget Optimizer</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800">
                 Potential Savings: {formatCurrency(totalPossibleSavings)}
@@ -158,14 +166,14 @@ export const AiOptimizerModal: React.FC<AiOptimizerModalProps> = ({ isOpen, onCl
             Applying these optimizations can free up funds for photography or guest gifts.
           </span>
           <button
+            type="button"
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold transition-colors shadow-lg shadow-violet-500/25"
           >
             Done
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

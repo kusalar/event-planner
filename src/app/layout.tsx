@@ -20,9 +20,53 @@ const serifFont = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://event-planner-liard-beta.vercel.app'),
   title: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
   description:
-    'Plan weddings, birthdays, corporate summits, and cultural celebrations with intelligent budget management, milestone timelines, vendor tracking, and 24/7 GenAI assistance.',
+    'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
+    description:
+      'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
+    url: 'https://event-planner-liard-beta.vercel.app',
+    siteName: 'Eventora AI',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/eventora-hero.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Eventora AI Platform Preview',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
+    description:
+      'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
+    images: ['/eventora-hero.jpg'],
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Eventora AI',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  description:
+    'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
+  url: 'https://event-planner-liard-beta.vercel.app',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
 };
 
 export default function RootLayout({
@@ -32,12 +76,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${sansFont.variable} ${serifFont.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Synchronous inline script prevents flash of incorrect theme before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var theme="dark";for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf("eventora_")===0){try{var s=JSON.parse(localStorage.getItem(k)||"{}");if(s&&s.theme){theme=s.theme;break;}}catch(e){}}}if(theme==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}}catch(e){}})();`,
+          }}
+        />
+        {/* Structured Data (JSON-LD) for SoftwareApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col antialiased selection:bg-violet-500 selection:text-white font-sans">
+        {/* Accessible Skip to Content Link */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-xl focus:shadow-xl focus:font-bold focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          Skip to main content
+        </a>
         <AuthProvider>
           <EventProvider>
             <Navbar />
             <AuthGuard>
-              <main className="flex-1 flex flex-col">{children}</main>
+              <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col outline-none">
+                {children}
+              </main>
             </AuthGuard>
             <Footer />
           </EventProvider>

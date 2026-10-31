@@ -159,6 +159,7 @@ export default function VendorsPage() {
         <div className="flex items-center space-x-2 text-xs">
           <span className="text-slate-400">Status:</span>
           <select
+            aria-label="Filter vendors by booking status"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 font-medium outline-none"
@@ -205,6 +206,7 @@ export default function VendorsPage() {
                     {/* Status Pill & Rating */}
                     <div className="text-right">
                       <select
+                        aria-label={`Update booking status for ${vendor.name}`}
                         value={vendor.status}
                         onChange={(e) => updateVendor(vendor.id, { status: e.target.value as VendorStatus })}
                         className={`text-[10px] font-bold uppercase rounded-lg px-2 py-1 outline-none border cursor-pointer ${
@@ -319,6 +321,7 @@ export default function VendorsPage() {
                       onClick={() => deleteVendor(vendor.id)}
                       className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
                       title="Remove vendor"
+                      aria-label={`Remove vendor ${vendor.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

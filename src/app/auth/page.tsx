@@ -354,12 +354,13 @@ function AuthContent() {
           {/* Full Name — only shown in signup */}
           {view === 'signup' && (
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="auth-name" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Full Name
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
+                  id="auth-name"
                   type="text"
                   required
                   placeholder="e.g. Sreya Sengupta"
@@ -373,12 +374,13 @@ function AuthContent() {
 
           {/* Email */}
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="auth-email" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Email Address
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
+                id="auth-email"
                 type="email"
                 required
                 placeholder="name@example.com"
@@ -391,12 +393,13 @@ function AuthContent() {
 
           {/* Password */}
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="auth-password" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Password{view === 'signup' ? ' (Minimum 6 characters)' : ''}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
+                id="auth-password"
                 type="password"
                 required
                 minLength={view === 'signup' ? 6 : 1}
@@ -464,12 +467,13 @@ function AuthContent() {
       {view === 'forgot' && (
         <form onSubmit={handleForgotPassword} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label htmlFor="auth-forgot-email" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Email Address
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
+                id="auth-forgot-email"
                 type="email"
                 required
                 placeholder="name@example.com"

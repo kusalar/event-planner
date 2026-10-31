@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
+import { Modal } from '@/components/ui/Modal';
 import { X, Sparkles, Copy, Check, MessageSquare, Mail, RefreshCw } from 'lucide-react';
 
 interface InvitationModalProps {
@@ -56,21 +57,28 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-2xl rounded-2xl glass-card p-6 shadow-2xl relative border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      titleId="invitation-modal-title"
+      maxWidth="max-w-2xl"
+      contentClassName="max-h-[90vh] overflow-y-auto"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close dialog"
+        className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
 
         <div className="flex items-center space-x-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">AI Invitation Generator</h3>
+            <h3 id="invitation-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">AI Invitation Generator</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Generate personalized WhatsApp and print invitation wording for {currentEvent.title}
             </p>
@@ -80,10 +88,11 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({ isOpen, onClos
         <div className="space-y-4 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="invite-host-names" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Hosted By (Family / Org Name)
               </label>
               <input
+                id="invite-host-names"
                 type="text"
                 value={hostNames}
                 onChange={(e) => setHostNames(e.target.value)}
@@ -93,10 +102,11 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({ isOpen, onClos
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label htmlFor="invite-tone" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Tone & Aesthetic
               </label>
               <select
+                id="invite-tone"
                 value={tone}
                 onChange={(e) => setTone(e.target.value as 'Traditional' | 'Royal' | 'Modern' | 'Quirky' | 'Formal')}
                 className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white outline-none"
@@ -191,8 +201,7 @@ export const InvitationModal: React.FC<InvitationModalProps> = ({ isOpen, onClos
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

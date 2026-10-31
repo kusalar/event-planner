@@ -89,7 +89,11 @@ export default function LandingPage() {
               </span>
               <span>Try natural language in any detail</span>
             </div>
+            <label htmlFor="hero-event-prompt" className="sr-only">
+              Describe your event in natural language
+            </label>
             <textarea
+              id="hero-event-prompt"
               rows={3}
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
@@ -197,9 +201,9 @@ export default function LandingPage() {
                   <Wand2 className="w-3.5 h-3.5" />
                   <span>Generative AI Production Blueprint</span>
                 </div>
-                <h3 className="text-lg sm:text-xl font-black text-white">
+                <h2 className="text-lg sm:text-xl font-black text-white">
                   Bengali Royal Wedding & 2-Day Cultural Celebration
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-300 mt-1 max-w-xl font-normal leading-relaxed">
                   Synthesized in 2.8 seconds from natural language: 9-category ₹8,00,000 budget, 8 verified milestone tasks, and authentic catering menus.
                 </p>
@@ -271,12 +275,12 @@ export default function LandingPage() {
       {/* 4 Pillars Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full border-t border-slate-200 dark:border-slate-800/80">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-2 block">
             The Eventora AI Advantage
-          </h2>
-          <h3 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
             Everything You Need to Orchestrate Extraordinary Events
-          </h3>
+          </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-3">
             Traditional spreadsheets create anxiety. Eventora AI gives you an autonomous production team in your pocket.
           </p>
@@ -288,7 +292,7 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Sparkles className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">GenAI Event Architect</h4>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">GenAI Event Architect</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Describe in plain English or regional terms. Gemini analyzes cultural nuances, dietary preferences, and
               budget scales into an exhaustive production blueprint.
@@ -300,7 +304,7 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Wallet className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">Dynamic Budget Manager</h4>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">Dynamic Budget Manager</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Category allocations across venue, catering, decor, and photography with real expense tracking. Features an
               AI Budget Optimizer that surfaces 15-20% cost savings.
@@ -312,7 +316,7 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Calendar className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">6-Month Phased Timeline</h4>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">6-Month Phased Timeline</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Automated milestone countdowns from 6 months before to event morning. Interactive task calendars, priority
               badges, and completion celebration streaks.
@@ -324,7 +328,7 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Users className="w-6 h-6" />
             </div>
-            <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">Vendor OS & AI Checklists</h4>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">Vendor OS & AI Checklists</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Manage quotes, advance deposits, and contracts. Equipped with GenAI interview checklists of questions to
               ask before signing any vendor.
@@ -339,7 +343,7 @@ export default function LandingPage() {
           <span className="text-xs font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400">
             Frictionless Process
           </span>
-          <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">How Eventora AI Works</h3>
+          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">How Eventora AI Works</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
@@ -347,7 +351,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-full bg-violet-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm shadow-lg shadow-violet-500/30">
               1
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-base mb-2">Input Your Vision</h4>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">Input Your Vision</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Specify your budget, guest scale, event date, and cultural cuisine or simply paste a natural language story.
             </p>
@@ -357,7 +361,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm shadow-lg shadow-purple-500/30">
               2
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-base mb-2">Gemini Synthesizes</h4>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">Gemini Synthesizes</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
               In seconds, GenAI computes category budgets, structures chronologically phased tasks, and formulates vendor specs.
             </p>
@@ -367,7 +371,7 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center mx-auto mb-4 text-sm shadow-lg shadow-pink-500/30">
               3
             </div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-base mb-2">Execute & Chat 24/7</h4>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">Execute & Chat 24/7</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Log payments, check off milestones, generate custom WhatsApp invites, and ask the AI assistant questions anytime.
             </p>
@@ -409,9 +413,9 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full text-center">
         <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-tr from-violet-900/60 via-purple-900/40 to-pink-900/40 border border-violet-500/30 glass-card relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/20 blur-3xl rounded-full pointer-events-none" />
-          <h3 className="text-2xl sm:text-4xl font-extrabold text-white mb-4">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-4">
             Ready to Plan Your Next Unforgettable Event?
-          </h3>
+          </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto mb-8">
             Experience the future of event management. Free to use with sample curated intelligence or connect your
             Gemini API key for real-time model synthesis.

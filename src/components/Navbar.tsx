@@ -109,6 +109,8 @@ export const Navbar: React.FC = () => {
               <div className="relative ml-2 sm:ml-4">
                 <button
                   onClick={() => setEventDropdownOpen(!eventDropdownOpen)}
+                  aria-label="Select active event plan"
+                  aria-expanded={eventDropdownOpen}
                   className="flex items-center space-x-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors border border-slate-200 dark:border-slate-700 max-w-[190px] sm:max-w-[240px]"
                 >
                   <span className="truncate">{currentEvent.title}</span>
@@ -196,6 +198,8 @@ export const Navbar: React.FC = () => {
 
             {/* Currency Selector */}
             <select
+              id="navbar-currency-select"
+              aria-label="Select regional currency"
               value={userProfile.currency}
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
               className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-violet-500"
@@ -211,6 +215,7 @@ export const Navbar: React.FC = () => {
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
             >
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
             </button>
@@ -224,6 +229,8 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>

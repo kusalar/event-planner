@@ -286,8 +286,9 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Name / Title *</label>
+                  <label htmlFor="create-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Name / Title *</label>
                   <input
+                    id="create-title"
                     type="text"
                     required
                     placeholder="e.g. Aditi & Rohan's Royal Bengali Wedding"
@@ -299,8 +300,9 @@ export default function CreateEventPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Date *</label>
+                    <label htmlFor="create-date" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Event Date *</label>
                     <input
+                      id="create-date"
                       type="date"
                       required
                       value={date}
@@ -310,8 +312,9 @@ export default function CreateEventPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Duration *</label>
+                    <label htmlFor="create-duration" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Duration *</label>
                     <input
+                      id="create-duration"
                       type="text"
                       placeholder="e.g. 2-Day Celebration / 6 Hours"
                       value={duration}
@@ -322,10 +325,11 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="create-location" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Event Location / City *
                   </label>
                   <input
+                    id="create-location"
                     type="text"
                     required
                     placeholder="e.g. Kolkata, West Bengal"
@@ -342,10 +346,11 @@ export default function CreateEventPage() {
               <div className="space-y-4 animate-in fade-in">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label htmlFor="create-guest-count" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Estimated Guest Count *
                     </label>
                     <input
+                      id="create-guest-count"
                       type="number"
                       required
                       min="5"
@@ -358,10 +363,11 @@ export default function CreateEventPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label htmlFor="create-total-budget" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Total Estimated Budget (₹ INR) *
                     </label>
                     <input
+                      id="create-total-budget"
                       type="number"
                       required
                       min="10000"
@@ -377,10 +383,11 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="create-food-pref" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Food & Catering Preferences
                   </label>
                   <input
+                    id="create-food-pref"
                     type="text"
                     placeholder="e.g. Authentic Bengali Feast (Bhetki Paturi, Kosha Mangsho, Mishti Doi)"
                     value={foodPreferences}
@@ -395,10 +402,11 @@ export default function CreateEventPage() {
             {step === 3 && (
               <div className="space-y-4 animate-in fade-in">
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="create-theme" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Decoration Theme & Aesthetic Preferences
                   </label>
                   <input
+                    id="create-theme"
                     type="text"
                     placeholder="e.g. Traditional Rajbari Royalty with Terracotta & Marigold"
                     value={theme}
@@ -408,10 +416,11 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="create-special-reqs" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Special Requirements & Entertainment
                   </label>
                   <input
+                    id="create-special-reqs"
                     type="text"
                     placeholder="e.g. Eco-friendly pottery, live Shehnai + Baul artists, drone videography"
                     value={specialRequirements}
@@ -421,10 +430,11 @@ export default function CreateEventPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="create-raw-prompt" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Natural Language Requirements / Story (Optional)
                   </label>
                   <textarea
+                    id="create-raw-prompt"
                     rows={3}
                     placeholder="Describe your event vision freely (e.g. 'I want to organize a Bengali wedding in Kolkata for 300 guests with a budget of ₹8 lakh. I prefer traditional decorations, Bengali cuisine, and a 2-day celebration.')"
                     value={rawPrompt}
