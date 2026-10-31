@@ -1,15 +1,15 @@
 import { GoogleGenAI } from '@google/genai';
 import { GeneratedPlanResponse } from '@/types';
 
-// Get API key from env or header
+// Get API key from env (server-only) or custom user key
 export function getGeminiClient(customApiKey?: string) {
-  const key = customApiKey || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const key = customApiKey || process.env.GEMINI_API_KEY;
   if (!key) return null;
   return new GoogleGenAI({ apiKey: key });
 }
 
 export function isGeminiKeyConfigured(customApiKey?: string): boolean {
-  return Boolean(customApiKey || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+  return Boolean(customApiKey || process.env.GEMINI_API_KEY);
 }
 
 // Fallback high-fidelity plan generator tailored strictly to user inputs

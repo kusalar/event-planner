@@ -145,6 +145,25 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [theme, setThemeState] = useState<'light' | 'dark'>('dark');
   const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+  const [hasServerAiKey, setHasServerAiKey] = useState<boolean>(false);
+
+  // Check server-side Gemini AI key status securely without exposing keys to the client bundle
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/gemini/status')
+      .then((res) => (res.ok ? res.json() : { hasServerKey: false }))
+      .then((data) => {
+        if (isMounted && data && typeof data.hasServerKey === 'boolean') {
+          setHasServerAiKey(data.hasServerKey);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setHasServerAiKey(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Synchronize state when authentication or demo status changes
   useEffect(() => {
@@ -322,7 +341,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const totalVendorAdvancePaid = vendors.reduce((acc, v) => acc + (Number(v.advancePaid) || 0), 0);
   const confirmedGuestsCount = guests.filter((g) => g.rsvpStatus === 'confirmed').length;
 
-  const isLiveAiAvailable = Boolean(geminiApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+  const isLiveAiAvailable = Boolean(geminiApiKey || hasServerAiKey);
 
   // Currency formatting helper
   const formatCurrency = (amount: number): string => {
