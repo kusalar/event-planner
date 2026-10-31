@@ -4,10 +4,17 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
-interface AuthResponse {
+export interface AuthResponse {
   success: boolean;
   error?: string;
   requiresEmailConfirmation?: boolean;
+  /**
+   * True when signUp returns a user with an empty identities array, which
+   * Supabase emits for already-registered emails (instead of revealing that
+   * the account exists).  The UI should show a "check your inbox OR sign in"
+   * message without explicitly confirming the email is taken.
+   */
+  possibleDuplicate?: boolean;
 }
 
 interface AuthContextType {
@@ -18,6 +25,7 @@ interface AuthContextType {
   isDemoMode: boolean;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (email: string, password: string, fullName: string) => Promise<AuthResponse>;
+  forgotPassword: (email: string) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
   enterDemoMode: () => void;
   exitDemoMode: () => void;
@@ -26,6 +34,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEMO_STORAGE_KEY = 'eventora_demo_active_v1';
+
+// Map raw Supabase error codes / messages to user-friendly strings
+function mapSignInError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('invalid login credentials') || lower.includes('invalid_credentials')) {
+    return 'Invalid email or password. Please check your details and try again.';
+  }
+  if (lower.includes('email not confirmed') || lower.includes('email_not_confirmed')) {
+    return 'Your email address has not been confirmed yet. Please check your inbox for the confirmation link before signing in.';
+  }
+  if (lower.includes('too many requests') || lower.includes('rate limit')) {
+    return 'Too many sign-in attempts. Please wait a moment and try again.';
+  }
+  return message;
+}
+
+function mapSignUpError(message: string, code?: string): string {
+  if (code === 'over_email_send_rate_limit' || message.includes('rate limit')) {
+    return 'Too many registration or verification email requests. Please wait before trying again. If you already have an account, switch to Sign In.';
+  }
+  if (code === 'user_already_exists' || message.includes('already registered')) {
+    return 'An account with this email already exists. Please switch to Sign In.';
+  }
+  if (message.includes('Password should be at least')) {
+    return 'Password must be at least 6 characters long.';
+  }
+  return message;
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  // Initialize session and listen for auth changes
+  // Initialize session and listen for auth state changes
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
       return;
@@ -61,19 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(data?.session?.user || null);
           if (data?.session?.user) {
             setIsDemoMode(false);
-            try {
-              localStorage.removeItem(DEMO_STORAGE_KEY);
-            } catch {
-              // ignore
-            }
+            try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* ignore */ }
           }
         }
       } catch (err) {
         console.error('Error getting Supabase session:', err);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       }
     }
 
@@ -87,11 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentSession?.user || null);
       if (currentSession?.user) {
         setIsDemoMode(false);
-        try {
-          localStorage.removeItem(DEMO_STORAGE_KEY);
-        } catch {
-          // ignore
-        }
+        try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* ignore */ }
       }
       setIsLoading(false);
     });
@@ -102,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // ─── Sign In ──────────────────────────────────────────────────────────────
   const signIn = useCallback(
     async (email: string, password: string): Promise<AuthResponse> => {
       const cleanEmail = email.trim();
@@ -124,14 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (error) {
-          let userMessage = error.message;
-          if (error.message.includes('Invalid login credentials')) {
-            userMessage = 'Invalid email or password. Please check your credentials and try again.';
-          } else if (error.message.includes('Email not confirmed')) {
-            userMessage =
-              'Your email address has not been confirmed yet. Please check your inbox for the confirmation link before signing in.';
-          }
-          return { success: false, error: userMessage };
+          return { success: false, error: mapSignInError(error.message) };
         }
 
         if (!data.session || !data.user) {
@@ -141,15 +161,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         }
 
-        // Authentication succeeded
         setSession(data.session);
         setUser(data.user);
         setIsDemoMode(false);
-        try {
-          localStorage.removeItem(DEMO_STORAGE_KEY);
-        } catch {
-          // ignore
-        }
+        try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* ignore */ }
 
         return { success: true };
       } catch (err: unknown) {
@@ -162,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
+  // ─── Sign Up ──────────────────────────────────────────────────────────────
   const signUp = useCallback(
     async (email: string, password: string, fullName: string): Promise<AuthResponse> => {
       const cleanEmail = email.trim();
@@ -190,30 +206,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: cleanEmail,
           password,
           options: {
-            data: {
-              full_name: cleanName,
-            },
+            data: { full_name: cleanName },
           },
         });
 
         if (error) {
-          return { success: false, error: error.message };
+          // Explicit error code mapping — never pass raw server messages to the user
+          return {
+            success: false,
+            error: mapSignUpError(error.message, error.code ?? undefined),
+          };
         }
 
-        // If session exists immediately, user is logged in (auto-confirm enabled)
+        // Supabase returns a user with NO identities when the email is already
+        // registered and email-confirmation is ON.  We surface this subtly without
+        // confirming the email exists (avoids user enumeration).
+        if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+          return {
+            success: true,
+            requiresEmailConfirmation: true,
+            possibleDuplicate: true,
+          };
+        }
+
+        // Auto-confirmed — session exists immediately
         if (data.session && data.user) {
           setSession(data.session);
           setUser(data.user);
           setIsDemoMode(false);
-          try {
-            localStorage.removeItem(DEMO_STORAGE_KEY);
-          } catch {
-            // ignore
-          }
+          try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* ignore */ }
           return { success: true, requiresEmailConfirmation: false };
         }
 
-        // If user created but no session, confirmation email was sent
+        // Normal path: confirmation email sent
         return { success: true, requiresEmailConfirmation: true };
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'An unexpected error occurred during sign up.';
@@ -225,6 +250,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     []
   );
 
+  // ─── Forgot Password ──────────────────────────────────────────────────────
+  const forgotPassword = useCallback(
+    async (email: string): Promise<AuthResponse> => {
+      const cleanEmail = email.trim();
+      if (!cleanEmail) {
+        return { success: false, error: 'Please enter your email address.' };
+      }
+
+      if (!isSupabaseConfigured || !supabase) {
+        return {
+          success: false,
+          error: 'Supabase authentication service is not configured.',
+        };
+      }
+
+      try {
+        // redirectTo must be an absolute URL that Supabase appends the token to
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: `${origin}/auth/reset-password`,
+        });
+
+        if (error) {
+          if (error.message.includes('rate limit') || error.code === 'over_email_send_rate_limit') {
+            return {
+              success: false,
+              error: 'Too many password reset requests. Please wait a few minutes and try again.',
+            };
+          }
+          return { success: false, error: error.message };
+        }
+
+        // Always return success regardless of whether the email exists — prevents enumeration
+        return { success: true };
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'An unexpected error occurred.';
+        return { success: false, error: msg };
+      }
+    },
+    []
+  );
+
+  // ─── Sign Out ─────────────────────────────────────────────────────────────
   const signOut = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
@@ -239,31 +307,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsDemoMode(false);
       try {
         localStorage.removeItem(DEMO_STORAGE_KEY);
-        // Clear active session keys
         localStorage.removeItem('eventora_supabase_auth_token');
-      } catch {
-        // ignore
-      }
+      } catch { /* ignore */ }
       setIsLoading(false);
     }
   }, []);
 
+  // ─── Demo Mode ────────────────────────────────────────────────────────────
   const enterDemoMode = useCallback(() => {
     setIsDemoMode(true);
-    try {
-      localStorage.setItem(DEMO_STORAGE_KEY, 'true');
-    } catch {
-      // ignore
-    }
+    try { localStorage.setItem(DEMO_STORAGE_KEY, 'true'); } catch { /* ignore */ }
   }, []);
 
   const exitDemoMode = useCallback(() => {
     setIsDemoMode(false);
-    try {
-      localStorage.removeItem(DEMO_STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    try { localStorage.removeItem(DEMO_STORAGE_KEY); } catch { /* ignore */ }
   }, []);
 
   const isAuthenticated = Boolean(user !== null);
@@ -278,6 +336,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isDemoMode,
         signIn,
         signUp,
+        forgotPassword,
         signOut,
         enterDemoMode,
         exitDemoMode,

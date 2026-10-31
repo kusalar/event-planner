@@ -8,3 +8,4 @@ export async function GET() {
     status: hasServerKey ? 'ready' : 'demo_fallback',
   });
 }
+

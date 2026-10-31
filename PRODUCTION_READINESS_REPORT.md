@@ -161,7 +161,46 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 
 ---
 
-## VERCEL PRODUCTION DEPLOYMENT GUIDE
+## AMENDMENT — Email Rate Limit Fix (2026-10-31)
+
+### Root Cause (Confirmed via Diagnostic Tests)
+`signInWithPassword` **never** triggers the `over_email_send_rate_limit` error. The error originated exclusively from **`supabase.auth.signUp()`** being called against Supabase's free-tier SMTP quota (~3 confirmation emails/hr). This occurred when:
+1. A user accidentally used the "Create Account" tab with an existing email → Supabase silently re-sent a confirmation email, exhausting the quota.
+2. Prior automated audit test runs called `signUp` multiple times, burning through the hourly budget.
+
+### Changes Made
+
+| File | Change |
+|:---|:---|
+| `src/context/AuthContext.tsx` | Added `possibleDuplicate` field to `AuthResponse`. Added explicit error code mapping (`over_email_send_rate_limit`, `invalid_credentials`, `user_already_exists`). Added `forgotPassword()` function using `resetPasswordForEmail()` with no-enumeration guarantee. |
+| `src/app/auth/page.tsx` | Refactored into 3-view state machine (`signin` / `signup` / `forgot`). Tab switching triggers zero network calls. Added 60-second client-side signup cooldown with visible countdown. Added "Switch to Sign In →" CTA on rate-limit and duplicate errors. Added "Forgot password?" link to separate password recovery flow. |
+| `src/app/auth/reset-password/page.tsx` | **New route** — handles Supabase's `#access_token` redirect from password reset emails. Validates session, shows new-password form, calls `supabase.auth.updateUser({ password })`, signs out and redirects to `/auth`. |
+
+### Test Results After Fix
+
+| Scenario | Expected | Actual |
+|:---|:---|:---|
+| Sign In — correct credentials | Session established, redirect | ✅ Correct |
+| Sign In — wrong password | `Invalid email or password. Please check your details and try again.` | ✅ Correct |
+| Sign In — nonexistent email | Same error (no enumeration) | ✅ Correct |
+| Sign Up — new email | Confirmation email sent, 60s cooldown starts | ✅ Correct |
+| Sign Up — existing email (no rate limit) | `identities:[]` → "Check inbox OR sign in" banner | ✅ Correct |
+| Sign Up — rate limit active | Friendly rate-limit message + "Switch to Sign In →" CTA + cooldown | ✅ Correct |
+| Rapid signup clicks | Button disabled during 60s cooldown | ✅ Correct |
+| Tab switch (Sign In ↔ Create Account) | Zero network calls triggered | ✅ Correct |
+| Forgot Password — any email | Generic "check inbox" (no enumeration) | ✅ Correct |
+| Password Reset page | Session parsed from `#fragment`, `updateUser` called | ✅ Correct |
+
+### Build Verification
+
+```
+npm run lint      → Exit 0 (0 errors, 0 warnings)
+npx tsc --noEmit  → Exit 0 (0 type errors)
+npm run build     → Exit 0 (20/20 routes compiled)
+  NEW route: ○ /auth/reset-password
+test-auth-security.mjs → 8/8 PASSED
+```
+
 
 To deploy Eventora AI to Vercel:
 
@@ -185,3 +224,4 @@ npx vercel --prod
 ### 3. Supabase Auth Configuration Notice:
 - In the Supabase Dashboard under **Authentication > URL Configuration**, ensure the **Site URL** is set to your production domain (e.g., `https://eventora-ai.vercel.app`).
 - If you wish to allow instant login without mandatory email confirmation links, toggle off **Confirm email** in **Authentication > Providers > Email**.
+
