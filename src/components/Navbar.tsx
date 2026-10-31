@@ -63,10 +63,10 @@ export const Navbar: React.FC = () => {
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-violet-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
-                  EVENTORA<span className="text-violet-500 font-medium text-xs ml-1 px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300">AI</span>
+                <span className="font-extrabold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-500 dark:from-violet-400 dark:via-fuchsia-400 dark:to-pink-400 bg-clip-text text-transparent">
+                  EVENTORA<span className="text-violet-600 dark:text-violet-300 font-bold text-xs ml-1 px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-950/80">AI</span>
                 </span>
-                <span className="text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-400 font-semibold -mt-1 hidden sm:inline">
+                <span className="text-[10px] tracking-wider uppercase text-slate-500 dark:text-slate-300 font-semibold -mt-1 hidden sm:inline">
                   Smart Event Planner
                 </span>
               </div>

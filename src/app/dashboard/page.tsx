@@ -160,7 +160,7 @@ export default function DashboardPage() {
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
+          <div className="text-2xl font-extrabold text-slate-900 dark:text-violet-300">
             {formatCurrency(currentEvent.totalBudget)}
           </div>
           <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
@@ -179,7 +179,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{formatCurrency(totalSpent)}</div>
+          <div className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">{formatCurrency(totalSpent)}</div>
           <div className="mt-3">
             <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
               <span>{budgetProgressPercentage}% of total budget</span>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{taskCompletionPercentage}%</div>
+          <div className="text-2xl font-extrabold text-purple-600 dark:text-purple-300">{taskCompletionPercentage}%</div>
           <div className="mt-3">
             <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
               <span>
@@ -235,7 +235,7 @@ export default function DashboardPage() {
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
+          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
             {bookedVendorsCount}{' '}
             <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ {vendors.length} Total</span>
           </div>
