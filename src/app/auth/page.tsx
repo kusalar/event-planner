@@ -4,11 +4,13 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Sparkles, Mail, Lock, User, ArrowRight, AlertCircle, CheckCircle2, ShieldCheck, PlayCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { Toast } from '@/components/Toast';
 
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
+  const signedOutParam = searchParams.get('signedOut');
 
   const { signIn, signUp, enterDemoMode } = useAuth();
 
@@ -19,6 +21,9 @@ function AuthContent() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(() =>
+    signedOutParam === 'true' ? 'You have successfully signed out.' : null
+  );
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,6 +238,12 @@ function AuthContent() {
         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
         <span>Protected with Supabase Authentication & PostgreSQL Row Level Security.</span>
       </div>
+
+      <Toast
+        message={toastMessage || ''}
+        isVisible={Boolean(toastMessage)}
+        onClose={() => setToastMessage(null)}
+      />
     </div>
   );
 }

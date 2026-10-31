@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEventContext } from '@/context/EventContext';
 import { useAuth } from '@/context/AuthContext';
+import { SignOutModal } from '@/components/SignOutModal';
+import { Toast } from '@/components/Toast';
+import { UserMenu } from '@/components/layout/UserMenu';
 import { CurrencyCode } from '@/types';
 import {
   Sparkles,
@@ -25,6 +28,7 @@ import {
   UserCheck,
   LogOut,
   LogIn,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -44,12 +48,28 @@ export const Navbar: React.FC = () => {
 
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleSignOut = async () => {
-    setProfileDropdownOpen(false);
-    await signOut();
-    router.push('/auth');
+  const handleOpenSignOutModal = () => {
+    setMobileMenuOpen(false);
+    setIsSignOutModalOpen(true);
+  };
+
+  const handleConfirmSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      setIsSignOutModalOpen(false);
+      setToastMessage('You have successfully signed out.');
+      router.replace('/auth?signedOut=true');
+    } catch (err) {
+      console.error('Sign-out error:', err);
+      alert('An error occurred during sign out. Please try again.');
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const navLinks = [
@@ -195,78 +215,10 @@ export const Navbar: React.FC = () => {
               {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
             </button>
 
-            {/* Auth / Profile Area */}
-            {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full ring-2 ring-violet-500/40 overflow-hidden bg-gradient-to-tr from-violet-600 to-pink-500 text-white font-bold text-xs flex items-center justify-center shadow-md">
-                    {userProfile.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{(userProfile.name || user?.email || 'U').charAt(0).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 hidden sm:inline" />
-                </button>
-
-                {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl glass-card py-2 z-50 animate-in fade-in slide-in-from-top-2 border border-slate-200 dark:border-slate-800">
-                    <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                      <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
-                        {userProfile.name || 'Verified User'}
-                      </div>
-                      <div className="text-[11px] text-slate-400 truncate">{user?.email}</div>
-                      <div className="mt-1 inline-flex items-center space-x-1 text-[10px] text-emerald-500 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span>Supabase Authenticated</span>
-                      </div>
-                    </div>
-
-                    <Link
-                      href="/settings"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="px-4 py-2 text-xs flex items-center space-x-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                      <span>Account Settings</span>
-                    </Link>
-
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-xs flex items-center space-x-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-t border-slate-100 dark:border-slate-800"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : isDemoMode ? (
-              <div className="flex items-center space-x-2">
-                <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
-                  Demo
-                </span>
-                <Link
-                  href="/auth"
-                  className="px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-500/20 flex items-center space-x-1.5 transition-all"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Sign In</span>
-                </Link>
-              </div>
-            ) : (
-              <Link
-                href="/auth"
-                className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-500/20 flex items-center space-x-1.5 transition-all"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In</span>
-              </Link>
-            )}
+            {/* Desktop Auth / Profile Area */}
+            <div className="hidden sm:block">
+              <UserMenu />
+            </div>
 
             {/* Mobile Hamburger Button */}
             <button
@@ -300,6 +252,64 @@ export const Navbar: React.FC = () => {
                 </Link>
               );
             })}
+
+            {/* Mobile Auth & Sign Out Section */}
+            {isAuthenticated ? (
+              <div className="pt-3 pb-1 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="px-3 py-1 flex items-center justify-between">
+                  <div className="flex items-center space-x-2 truncate">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-pink-500 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                      {(userProfile.name || user?.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="truncate text-left text-xs">
+                      <div className="font-bold text-slate-900 dark:text-white truncate">
+                        {userProfile.name || 'Verified User'}
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">{user?.email}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 text-[10px] text-emerald-500 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full shrink-0">
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>Active</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenSignOutModal}
+                  className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-900/50 transition-colors shadow-sm"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            ) : isDemoMode ? (
+              <div className="pt-3 pb-1 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="px-3 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                  Exploring in Demo Sandbox Mode
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenSignOutModal}
+                  className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-bold text-xs border border-amber-200 dark:border-amber-900/50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Exit Demo Sandbox</span>
+                </button>
+              </div>
+            ) : (
+              <div className="pt-3 pb-1 border-t border-slate-100 dark:border-slate-800">
+                <Link
+                  href="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full flex items-center justify-center space-x-2 px-3 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-500/25 transition-all"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In / Create Account</span>
+                </Link>
+              </div>
+            )}
+
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center px-3 py-2">
               <span className="text-xs text-slate-500">AI Mode:</span>
               <span className={`text-xs font-semibold ${isLiveAiAvailable ? 'text-emerald-500' : 'text-amber-500'}`}>
@@ -309,6 +319,21 @@ export const Navbar: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <SignOutModal
+        isOpen={isSignOutModalOpen}
+        onClose={() => setIsSignOutModalOpen(false)}
+        onConfirm={handleConfirmSignOut}
+        isSigningOut={isSigningOut}
+      />
+
+      {/* Confirmation Toast */}
+      <Toast
+        message={toastMessage || ''}
+        isVisible={Boolean(toastMessage)}
+        onClose={() => setToastMessage(null)}
+      />
     </header>
   );
 };

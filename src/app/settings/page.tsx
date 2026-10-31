@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useEventContext } from '@/context/EventContext';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { SignOutModal } from '@/components/SignOutModal';
 import {
   Settings,
   Key,
@@ -26,6 +27,8 @@ import { CurrencyCode } from '@/types';
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isDemoMode, signOut } = useAuth();
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const {
     currentEvent,
     updateEvent,
@@ -396,10 +399,7 @@ export default function SettingsPage() {
             {isAuthenticated ? (
               <button
                 type="button"
-                onClick={async () => {
-                  await signOut();
-                  router.push('/auth');
-                }}
+                onClick={() => setIsSignOutModalOpen(true)}
                 className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 font-bold text-xs flex items-center space-x-1.5 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -418,6 +418,22 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <SignOutModal
+        isOpen={isSignOutModalOpen}
+        onClose={() => setIsSignOutModalOpen(false)}
+        onConfirm={async () => {
+          setIsSigningOut(true);
+          try {
+            await signOut();
+            router.replace('/auth?signedOut=true');
+          } finally {
+            setIsSigningOut(false);
+            setIsSignOutModalOpen(false);
+          }
+        }}
+        isSigningOut={isSigningOut}
+      />
 
       {/* 5. Supabase DB & SQL Migration Info */}
       <div className="p-6 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 text-xs">
