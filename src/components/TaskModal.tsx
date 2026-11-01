@@ -22,18 +22,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
   const [deadline, setDeadline] = useState(
     currentEvent?.date || '2027-02-14'
   );
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) {
-      alert('Please enter a task title.');
+    if (!title.trim()) {
+      setFormError('Please enter a milestone task title.');
       return;
     }
 
     addTimelineTask({
-      title,
+      title: title.trim(),
       description,
       phase,
       priority,
@@ -44,6 +45,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
 
     setTitle('');
     setDescription('');
+    setFormError(null);
     onClose();
   };
 
@@ -74,7 +76,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
+        {formError && (
+          <div role="alert" className="p-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+            {formError}
+          </div>
+        )}
+        <div>
             <label htmlFor="task-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Task Title *
             </label>

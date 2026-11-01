@@ -23,11 +23,13 @@ import {
 } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { CurrencyCode } from '@/types';
+import { Toast } from '@/components/Toast';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isDemoMode, signOut } = useAuth();
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [toastState, setToastState] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const {
     currentEvent,
@@ -481,10 +483,11 @@ export default function SettingsPage() {
             <div className="text-[11px] text-slate-500">Restore the curated Bengali Wedding and Tech Conclave plans</div>
           </div>
           <button
+            type="button"
             onClick={() => {
               if (confirm('Are you sure you want to reset all data back to the default curated sample datasets?')) {
                 resetToSampleData();
-                alert('Reset complete!');
+                setToastState({ message: 'Sample datasets restored successfully.', type: 'success' });
               }
             }}
             className="px-3.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 dark:hover:bg-rose-900 text-rose-700 dark:text-rose-300 font-semibold flex items-center space-x-1.5 transition-colors"
@@ -494,6 +497,13 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+
+      <Toast
+        message={toastState?.message || ''}
+        isVisible={Boolean(toastState)}
+        type={toastState?.type}
+        onClose={() => setToastState(null)}
+      />
     </div>
   );
 }

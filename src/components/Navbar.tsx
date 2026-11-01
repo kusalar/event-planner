@@ -51,6 +51,7 @@ export const Navbar: React.FC = () => {
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   const handleOpenSignOutModal = () => {
     setMobileMenuOpen(false);
@@ -62,11 +63,13 @@ export const Navbar: React.FC = () => {
     try {
       await signOut();
       setIsSignOutModalOpen(false);
+      setToastType('success');
       setToastMessage('You have successfully signed out.');
       router.replace('/auth?signedOut=true');
     } catch (err) {
       console.error('Sign-out error:', err);
-      alert('An error occurred during sign out. Please try again.');
+      setToastType('error');
+      setToastMessage('An error occurred during sign out. Please try again.');
     } finally {
       setIsSigningOut(false);
     }
@@ -339,6 +342,7 @@ export const Navbar: React.FC = () => {
       <Toast
         message={toastMessage || ''}
         isVisible={Boolean(toastMessage)}
+        type={toastType}
         onClose={() => setToastMessage(null)}
       />
     </header>

@@ -2,26 +2,53 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiClient, generateCuratedPlan } from '@/lib/gemini';
 import { GeneratedPlanResponse } from '@/types';
 
+function isValidPlanResponse(data: unknown): data is GeneratedPlanResponse {
+  if (!data || typeof data !== 'object') return false;
+  const d = data as Partial<GeneratedPlanResponse>;
+  if (typeof d.event_summary !== 'string' || !d.event_summary.trim()) return false;
+  if (!d.budget || typeof d.budget !== 'object') return false;
+  if (!Array.isArray(d.budget.categories) || d.budget.categories.length === 0) return false;
+  if (!Array.isArray(d.timeline) || d.timeline.length === 0) return false;
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const {
-      eventType,
-      title,
-      date,
-      location,
-      guestCount,
-      totalBudget,
-      duration,
-      theme,
-      foodPreferences,
-      specialRequirements,
-      rawPrompt,
-      customApiKey,
-    } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+      if (!body || typeof body !== 'object') {
+        return NextResponse.json({ error: 'Request body must be a valid JSON object' }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid or empty JSON in request body' }, { status: 400 });
+    }
 
-    if (!title || !location || !totalBudget || !guestCount) {
-      return NextResponse.json({ error: 'Missing required event fields' }, { status: 400 });
+    const eventType = typeof body.eventType === 'string' ? body.eventType.trim() : 'other';
+    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    const date = typeof body.date === 'string' ? body.date.trim() : '';
+    const location = typeof body.location === 'string' ? body.location.trim() : '';
+    const duration = typeof body.duration === 'string' ? body.duration.trim() : '1 day';
+    const theme = typeof body.theme === 'string' ? body.theme.trim() : '';
+    const foodPreferences = typeof body.foodPreferences === 'string' ? body.foodPreferences.trim() : '';
+    const specialRequirements = typeof body.specialRequirements === 'string' ? body.specialRequirements.trim() : '';
+    const rawPrompt = typeof body.rawPrompt === 'string' ? body.rawPrompt.trim() : '';
+    const customApiKey = typeof body.customApiKey === 'string' ? body.customApiKey.trim() : undefined;
+
+    const guestCount = Number(body.guestCount);
+    const totalBudget = Number(body.totalBudget);
+
+    if (!title) {
+      return NextResponse.json({ error: 'Event title is required' }, { status: 400 });
+    }
+    if (!location) {
+      return NextResponse.json({ error: 'Event location is required' }, { status: 400 });
+    }
+    if (!Number.isFinite(guestCount) || guestCount <= 0 || guestCount > 100000) {
+      return NextResponse.json({ error: 'Guest count must be a positive number up to 100,000' }, { status: 400 });
+    }
+    if (!Number.isFinite(totalBudget) || totalBudget <= 0) {
+      return NextResponse.json({ error: 'Total budget must be a positive number' }, { status: 400 });
     }
 
     const ai = getGeminiClient(customApiKey);
@@ -107,37 +134,27 @@ Output strictly valid JSON. Do not wrap in backticks or markdown fences if possi
 
         const rawText = response.text || '';
         const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedData: GeneratedPlanResponse = JSON.parse(cleanedText);
-        parsedData.isDemoMode = false;
+        const parsedData: unknown = JSON.parse(cleanedText);
 
-        return NextResponse.json(parsedData);
+        if (isValidPlanResponse(parsedData)) {
+          parsedData.isDemoMode = false;
+          return NextResponse.json(parsedData);
+        }
+
+        console.warn('Gemini response missing required schema fields, using curated fallback');
       } catch (geminiError: unknown) {
         console.warn('Gemini API call failed, falling back to curated plan:', geminiError);
-        const fallbackPlan = generateCuratedPlan({
-          eventType,
-          title,
-          date,
-          location,
-          guestCount: Number(guestCount),
-          totalBudget: Number(totalBudget),
-          duration,
-          theme,
-          foodPreferences,
-          specialRequirements,
-          rawPrompt,
-        });
-        return NextResponse.json(fallbackPlan);
       }
     }
 
-    // No API key configured: return curated plan with demo mode flag
+    // Curated high-fidelity plan generation (fallback or when no key configured)
     const curatedPlan = generateCuratedPlan({
       eventType,
       title,
       date,
       location,
-      guestCount: Number(guestCount),
-      totalBudget: Number(totalBudget),
+      guestCount,
+      totalBudget,
       duration,
       theme,
       foodPreferences,
@@ -147,8 +164,8 @@ Output strictly valid JSON. Do not wrap in backticks or markdown fences if possi
 
     return NextResponse.json(curatedPlan);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to generate event plan';
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('Plan generation route error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process event plan request' }, { status: 500 });
   }
 }

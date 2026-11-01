@@ -64,7 +64,7 @@ export interface EventContextType {
     plan?: GeneratedPlanResponse
   ) => EventItem;
   updateEvent: (eventId: string, updates: Partial<EventItem>) => void;
-  deleteEvent: (eventId: string) => void;
+  deleteEvent: (eventId: string) => { success: boolean; error?: string };
 
   // Expense & Budget Actions
   addExpense: (expense: Omit<Expense, 'id' | 'eventId'>) => void;
@@ -414,16 +414,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const deleteEvent = useCallback(
-    (eventId: string) => {
+    (eventId: string): { success: boolean; error?: string } => {
       if (events.length <= 1) {
-        alert('You must have at least one active event.');
-        return;
+        return { success: false, error: 'You must have at least one active event.' };
       }
       const remaining = events.filter((e) => e.id !== eventId);
       setEvents(remaining);
       if (currentEventId === eventId) {
         setCurrentEventId(remaining[0].id);
       }
+      return { success: true };
     },
     [events, currentEventId]
   );

@@ -7,6 +7,7 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeft,
+  AlertCircle,
 } from 'lucide-react';
 import { EventType } from '@/types';
 import { EVENT_PRESETS, EventPreset } from '@/data/eventPresets';
@@ -18,6 +19,7 @@ export default function CreateEventPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Read any prefilled prompt passed from Landing Page
   const [prefilledData] = useState(() => {
@@ -85,10 +87,11 @@ export default function CreateEventPage() {
 
   const handleGeneratePlan = async () => {
     if (!title || !location || !totalBudget || !guestCount) {
-      alert('Please fill in the required fields (Title, Location, Guests, Budget).');
+      setFormError('Please fill in the required fields (Title, Location, Guests, Budget).');
       return;
     }
 
+    setFormError(null);
     setLoading(true);
 
     // Step-by-step visual animation ticker
@@ -160,7 +163,7 @@ export default function CreateEventPage() {
     } catch (e) {
       clearInterval(interval);
       console.error('Plan generation error:', e);
-      alert('Encountered an issue generating plan. Please try again.');
+      setFormError('Encountered an issue generating plan. Please verify your connection or Gemini API key and try again.');
       setLoading(false);
     }
   };
@@ -254,6 +257,13 @@ export default function CreateEventPage() {
                 ))}
               </div>
             </div>
+
+            {formError && (
+              <div role="alert" className="p-3 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
 
             {/* Step 1: Essentials */}
             {step === 1 && (

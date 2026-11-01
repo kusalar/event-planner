@@ -24,18 +24,19 @@ export const VendorModal: React.FC<VendorModalProps> = ({ isOpen, onClose }) => 
   const [status, setStatus] = useState<VendorStatus>('inquiry');
   const [rating, setRating] = useState('5');
   const [notes, setNotes] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) {
-      alert('Please enter a vendor name.');
+    if (!name.trim()) {
+      setFormError('Please enter a vendor or business name.');
       return;
     }
 
     addVendor({
-      name,
+      name: name.trim(),
       category,
       contactPerson,
       phone,
@@ -59,6 +60,7 @@ export const VendorModal: React.FC<VendorModalProps> = ({ isOpen, onClose }) => 
     setQuotedPrice('');
     setAdvancePaid('');
     setNotes('');
+    setFormError(null);
     onClose();
   };
 
@@ -90,7 +92,12 @@ export const VendorModal: React.FC<VendorModalProps> = ({ isOpen, onClose }) => 
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div className="grid grid-cols-2 gap-3">
+        {formError && (
+          <div role="alert" className="p-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+            {formError}
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="vendor-name" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Vendor / Business Name *

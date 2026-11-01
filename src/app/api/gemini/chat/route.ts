@@ -6,27 +6,60 @@ interface IncomingChatMessage {
   content: string;
 }
 
+interface EventContextPayload {
+  title?: string;
+  eventType?: string;
+  date?: string;
+  location?: string;
+  guestCount?: number;
+  totalBudget?: number;
+  totalSpent?: number;
+  remainingBudget?: number;
+  foodPreferences?: string;
+  theme?: string;
+  bookedVendorsCount?: number;
+  completedTasksCount?: number;
+  totalTasksCount?: number;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages, eventContext, customApiKey } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+      if (!body || typeof body !== 'object') {
+        return NextResponse.json({ error: 'Request body must be a valid JSON object' }, { status: 400 });
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid or empty JSON in request body' }, { status: 400 });
+    }
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    const messages = Array.isArray(body.messages) ? (body.messages as IncomingChatMessage[]) : null;
+    const eventContext = (body.eventContext && typeof body.eventContext === 'object') ? (body.eventContext as EventContextPayload) : null;
+    const customApiKey = typeof body.customApiKey === 'string' ? body.customApiKey.trim() : undefined;
+
+    if (!messages || messages.length === 0) {
       return NextResponse.json({ error: 'No messages provided' }, { status: 400 });
     }
 
-    const lastUserMessage = messages[messages.length - 1].content;
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) {
+      return NextResponse.json({ error: 'Last message must contain non-empty text content' }, { status: 400 });
+    }
+
+    const lastUserMessage = lastMsg.content.trim();
     const ai = getGeminiClient(customApiKey);
 
     const contextSummary = eventContext
       ? `Active Event Context:
-- Title: ${eventContext.title}
-- Event Type: ${eventContext.eventType}
-- Date: ${eventContext.date}
-- Location: ${eventContext.location}
-- Guests: ${eventContext.guestCount}
-- Total Budget: ₹${eventContext.totalBudget?.toLocaleString('en-IN')}
-- Spent so far: ₹${eventContext.totalSpent?.toLocaleString('en-IN')}
-- Remaining: ₹${eventContext.remainingBudget?.toLocaleString('en-IN')}
+- Title: ${eventContext.title || 'Untitled'}
+- Event Type: ${eventContext.eventType || 'Event'}
+- Date: ${eventContext.date || 'TBA'}
+- Location: ${eventContext.location || 'TBA'}
+- Guests: ${eventContext.guestCount || 0}
+- Total Budget: ₹${Number(eventContext.totalBudget || 0).toLocaleString('en-IN')}
+- Spent so far: ₹${Number(eventContext.totalSpent || 0).toLocaleString('en-IN')}
+- Remaining: ₹${Number(eventContext.remainingBudget || 0).toLocaleString('en-IN')}
 - Food Preferences: ${eventContext.foodPreferences || 'Standard'}
 - Theme: ${eventContext.theme || 'Standard'}
 - Booked Vendors: ${eventContext.bookedVendorsCount || 0}
@@ -80,7 +113,7 @@ Rules:
     if (lower.includes('reduce') || lower.includes('save') || lower.includes('cut') || lower.includes('expense') || lower.includes('budget')) {
       reply = `### 💡 4 High-Impact Strategies to Optimize Your Budget for **${eventContext?.title || 'your event'}**
 
-Based on your current budget of **₹${(eventContext?.totalBudget || 800000).toLocaleString('en-IN')}** for **${eventContext?.guestCount || 300} guests**:
+Based on your current budget of **₹${Number(eventContext?.totalBudget || 800000).toLocaleString('en-IN')}** for **${eventContext?.guestCount || 300} guests**:
 
 1. **Strategic Catering Optimizations (Save 10%–15%):**
    - Replace 2 elaborate live specialty counters with high-volume, crowd-favorite street delicacies (e.g. Puchka/Chaat stations or Kulhar Chai).
@@ -156,7 +189,7 @@ With your event scheduled for **${eventContext?.date || 'upcoming dates'}**:
 
 Here is my recommendation:
 - **Guest Scale:** For ${eventContext?.guestCount || 300} guests, keeping lines flowing and logistics smooth is paramount.
-- **Budget Balance:** Your remaining budget is **₹${(eventContext?.remainingBudget || 0).toLocaleString('en-IN')}**. Prioritize locking any pending vendor contracts before costs rise.
+- **Budget Balance:** Your remaining budget is **₹${Number(eventContext?.remainingBudget || 0).toLocaleString('en-IN')}**. Prioritize locking any pending vendor contracts before costs rise.
 - **Next Step:** Would you like me to refine your catering menu, draft custom invitation wording, or review your vendor checklists?`;
     }
 
@@ -172,6 +205,6 @@ Here is my recommendation:
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Chat failed';
     console.error('Chat API error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process chat message' }, { status: 500 });
   }
 }

@@ -38,6 +38,82 @@ export function getUserStorageKey(userId: string | null, isDemo: boolean): strin
 }
 
 /**
+ * Defensive validation and sanitization for persisted local state.
+ * Gracefully preserves valid portions of user data even if individual maps are corrupted or outdated.
+ */
+export function validateAndSanitizePersistedState(data: unknown): PersistedAppState | null {
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+
+  const raw = data as Record<string, unknown>;
+
+  // Validate events array
+  let events: EventItem[] = [];
+  if (Array.isArray(raw.events)) {
+    events = raw.events.filter(
+      (e): e is EventItem =>
+        Boolean(e && typeof e === 'object' && typeof e.id === 'string' && typeof e.title === 'string')
+    );
+  }
+
+  const currentEventId =
+    typeof raw.currentEventId === 'string' && raw.currentEventId
+      ? raw.currentEventId
+      : events[0]?.id || '';
+
+  const sanitizeMap = <T>(candidate: unknown): Record<string, T[]> => {
+    if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+      const result: Record<string, T[]> = {};
+      for (const [k, v] of Object.entries(candidate)) {
+        if (Array.isArray(v)) {
+          result[k] = v;
+        }
+      }
+      return result;
+    }
+    return {};
+  };
+
+  const categoriesMap = sanitizeMap<BudgetCategory>(raw.categoriesMap);
+  const expensesMap = sanitizeMap<Expense>(raw.expensesMap);
+  const tasksMap = sanitizeMap<TimelineTask>(raw.tasksMap);
+  const vendorsMap = sanitizeMap<Vendor>(raw.vendorsMap);
+  const guestsMap = sanitizeMap<Guest>(raw.guestsMap);
+  const ideasMap = sanitizeMap<CreativeIdea>(raw.ideasMap);
+  const chatMap = sanitizeMap<ChatMessage>(raw.chatMap);
+
+  const theme: 'light' | 'dark' | undefined =
+    raw.theme === 'light' || raw.theme === 'dark' ? raw.theme : undefined;
+
+  const geminiApiKey =
+    typeof raw.geminiApiKey === 'string' ? raw.geminiApiKey.trim() : undefined;
+
+  let userProfile: UserProfile | undefined = undefined;
+  if (raw.userProfile && typeof raw.userProfile === 'object') {
+    const p = raw.userProfile as Partial<UserProfile>;
+    if (typeof p.name === 'string') {
+      userProfile = p as UserProfile;
+    }
+  }
+
+  return {
+    events,
+    currentEventId,
+    categoriesMap,
+    expensesMap,
+    tasksMap,
+    vendorsMap,
+    guestsMap,
+    ideasMap,
+    chatMap,
+    userProfile,
+    theme,
+    geminiApiKey,
+  };
+}
+
+/**
  * Safely loads persisted state from browser localStorage.
  */
 export function loadUserState(userId: string | null, isDemo: boolean): PersistedAppState | null {
@@ -48,7 +124,8 @@ export function loadUserState(userId: string | null, isDemo: boolean): Persisted
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw) as PersistedAppState;
+    const parsed: unknown = JSON.parse(raw);
+    return validateAndSanitizePersistedState(parsed);
   } catch (error) {
     console.warn('Failed to parse persisted state for key:', key, error);
     return null;
@@ -90,4 +167,3 @@ export function clearUserState(userId: string | null, isDemo: boolean): void {
     }
   }
 }
-

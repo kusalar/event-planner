@@ -28,17 +28,25 @@ export function generateCuratedPlan(params: {
 }): GeneratedPlanResponse {
   const { eventType, title, date, location, guestCount, totalBudget, theme, foodPreferences, specialRequirements } = params;
 
-  // Compute realistic budget distribution
-  const venueCost = Math.round(totalBudget * (eventType === 'wedding' ? 0.22 : 0.3));
-  const cateringCost = Math.round(totalBudget * (eventType === 'wedding' ? 0.32 : 0.35));
-  const decorCost = Math.round(totalBudget * 0.15);
-  const photoCost = Math.round(totalBudget * 0.1);
-  const entertainmentCost = Math.round(totalBudget * 0.08);
-  const invitesCost = Math.round(totalBudget * 0.04);
-  const miscCost = totalBudget - (venueCost + cateringCost + decorCost + photoCost + entertainmentCost + invitesCost);
+  // Sanitize numeric parameters defensively
+  const safeTotalBudget = Math.max(1000, Math.round(Number(totalBudget) || 100000));
+  const safeGuestCount = Math.max(1, Math.round(Number(guestCount) || 50));
 
-  // Compute milestone dates relative to event date
-  const eventDateObj = new Date(date || '2027-02-14');
+  // Compute realistic budget distribution
+  const venueCost = Math.round(safeTotalBudget * (eventType === 'wedding' ? 0.22 : 0.3));
+  const cateringCost = Math.round(safeTotalBudget * (eventType === 'wedding' ? 0.32 : 0.35));
+  const decorCost = Math.round(safeTotalBudget * 0.15);
+  const photoCost = Math.round(safeTotalBudget * 0.1);
+  const entertainmentCost = Math.round(safeTotalBudget * 0.08);
+  const invitesCost = Math.round(safeTotalBudget * 0.04);
+  const miscCost = safeTotalBudget - (venueCost + cateringCost + decorCost + photoCost + entertainmentCost + invitesCost);
+
+  // Compute milestone dates relative to event date with invalid-date guards
+  let eventDateObj = new Date(date || '2027-02-14');
+  if (isNaN(eventDateObj.getTime())) {
+    eventDateObj = new Date('2027-02-14');
+  }
+
   const dMinus6M = new Date(eventDateObj);
   dMinus6M.setMonth(dMinus6M.getMonth() - 6);
   const dMinus3M = new Date(eventDateObj);
@@ -50,55 +58,62 @@ export function generateCuratedPlan(params: {
   const dMinus1W = new Date(eventDateObj);
   dMinus1W.setDate(dMinus1W.getDate() - 7);
 
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  const formatDate = (d: Date) => {
+    try {
+      if (isNaN(d.getTime())) return '2027-02-14';
+      return d.toISOString().split('T')[0];
+    } catch {
+      return '2027-02-14';
+    }
+  };
 
   return {
     isDemoMode: true,
-    event_summary: `A meticulously engineered, bespoke plan for "${title}" in ${location}. Designed for ${guestCount} guests with a structured budget of ₹${totalBudget.toLocaleString('en-IN')}.${specialRequirements ? ` Special accommodations: ${specialRequirements}.` : ''} The production harmonizes ${theme || 'curated modern aesthetics'} with an unforgettable culinary and entertainment experience.`,
+    event_summary: `A meticulously engineered, bespoke plan for "${title}" in ${location}. Designed for ${safeGuestCount} guests with a structured budget of ₹${safeTotalBudget.toLocaleString('en-IN')}.${specialRequirements ? ` Special accommodations: ${specialRequirements}.` : ''} The production harmonizes ${theme || 'curated modern aesthetics'} with an unforgettable culinary and entertainment experience.`,
     budget: {
-      total: totalBudget,
+      total: safeTotalBudget,
       currency: 'INR',
       categories: [
         {
           name: 'Catering & Beverages',
           estimated_cost: cateringCost,
-          percentage: Math.round((cateringCost / totalBudget) * 100),
-          description: `Full live banquet & hospitality for ${guestCount} guests, including welcome refreshments and desserts.`,
+          percentage: Math.round((cateringCost / safeTotalBudget) * 100),
+          description: `Full live banquet & hospitality for ${safeGuestCount} guests, including welcome refreshments and desserts.`,
         },
         {
           name: 'Venue & Infrastructure',
           estimated_cost: venueCost,
-          percentage: Math.round((venueCost / totalBudget) * 100),
+          percentage: Math.round((venueCost / safeTotalBudget) * 100),
           description: `Primary venue booking in ${location}, bridal/VIP suites, generator backup, and parking logistics.`,
         },
         {
           name: 'Decoration & Thematic Styling',
           estimated_cost: decorCost,
-          percentage: Math.round((decorCost / totalBudget) * 100),
+          percentage: Math.round((decorCost / safeTotalBudget) * 100),
           description: `Custom stage/mandap design, ambient lighting, floral arches, and photobooth installations matching ${theme || 'event theme'}.`,
         },
         {
           name: 'Photography & Cinematography',
           estimated_cost: photoCost,
-          percentage: Math.round((photoCost / totalBudget) * 100),
+          percentage: Math.round((photoCost / safeTotalBudget) * 100),
           description: 'Candid photo team, 4K documentary video reel, drone aerial coverage, and teaser video delivery.',
         },
         {
           name: 'Entertainment & Music',
           estimated_cost: entertainmentCost,
-          percentage: Math.round((entertainmentCost / totalBudget) * 100),
+          percentage: Math.round((entertainmentCost / safeTotalBudget) * 100),
           description: 'Sound system, DJ console, live regional/acoustic artists, and anchor/emcee coordination.',
         },
         {
           name: 'Invitations & Guest Favors',
           estimated_cost: invitesCost,
-          percentage: Math.round((invitesCost / totalBudget) * 100),
+          percentage: Math.round((invitesCost / safeTotalBudget) * 100),
           description: 'Digital interactive e-invites, physical keepsakes, and personalized return gifts.',
         },
         {
           name: 'Contingency & Logistics',
           estimated_cost: miscCost,
-          percentage: Math.round((miscCost / totalBudget) * 100),
+          percentage: Math.round((miscCost / safeTotalBudget) * 100),
           description: 'Emergency buffer fund, transportation shuttles, and regulatory permits.',
         },
       ],

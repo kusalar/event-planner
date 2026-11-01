@@ -21,23 +21,24 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
   const [dietaryPreference, setDietaryPreference] = useState('Standard');
   const [plusOnes, setPlusOnes] = useState('0');
   const [tableAssigned, setTableAssigned] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) {
-      alert('Please enter guest name.');
+    if (!name.trim()) {
+      setFormError('Please enter the guest or family name.');
       return;
     }
 
     addGuest({
-      name,
+      name: name.trim(),
       email,
       phone,
       rsvpStatus,
       dietaryPreference,
-      plusOnes: Number(plusOnes) || 0,
+      plusOnes: Math.max(0, Number(plusOnes) || 0),
       tableAssigned,
     });
 
@@ -45,6 +46,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
     setEmail('');
     setPhone('');
     setTableAssigned('');
+    setFormError(null);
     onClose();
   };
 
@@ -75,7 +77,12 @@ export const GuestModal: React.FC<GuestModalProps> = ({ isOpen, onClose }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
+        {formError && (
+          <div role="alert" className="p-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+            {formError}
+          </div>
+        )}
+        <div>
             <label htmlFor="guest-name" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Guest Name *
             </label>

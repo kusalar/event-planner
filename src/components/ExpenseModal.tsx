@@ -18,21 +18,27 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
   const [categoryId, setCategoryId] = useState(budgetCategories[0]?.id || '');
   const [paidDate, setPaidDate] = useState('2027-02-14');
   const [notes, setNotes] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !amount || Number(amount) <= 0) {
-      alert('Please enter a valid title and positive amount.');
+    if (!title.trim()) {
+      setFormError('Please enter a valid expense title.');
+      return;
+    }
+    const numAmount = Number(amount);
+    if (!Number.isFinite(numAmount) || numAmount <= 0) {
+      setFormError('Please enter a valid positive expense amount.');
       return;
     }
 
     const selectedCategory = budgetCategories.find((c) => c.id === categoryId) || budgetCategories[0];
 
     addExpense({
-      title,
-      amount: Number(amount),
+      title: title.trim(),
+      amount: numAmount,
       categoryId: selectedCategory?.id || 'misc',
       categoryName: selectedCategory?.name || 'Miscellaneous',
       paidDate,
@@ -43,6 +49,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
     setTitle('');
     setAmount('');
     setNotes('');
+    setFormError(null);
     onClose();
   };
 
@@ -73,7 +80,12 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({ isOpen, onClose }) =
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div>
+        {formError && (
+          <div role="alert" className="p-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50">
+            {formError}
+          </div>
+        )}
+        <div>
             <label htmlFor="expense-title" className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Expense Title / Description *
             </label>
