@@ -3,13 +3,22 @@ import { GeneratedPlanResponse } from '@/types';
 
 // Get API key from env (server-only) or custom user key
 export function getGeminiClient(customApiKey?: string) {
-  const key = customApiKey || process.env.GEMINI_API_KEY;
+  const validCustomKey =
+    typeof customApiKey === 'string' && /^[A-Za-z0-9_-]{20,100}$/.test(customApiKey.trim())
+      ? customApiKey.trim()
+      : undefined;
+
+  const key = validCustomKey || process.env.GEMINI_API_KEY;
   if (!key) return null;
   return new GoogleGenAI({ apiKey: key });
 }
 
 export function isGeminiKeyConfigured(customApiKey?: string): boolean {
-  return Boolean(customApiKey || process.env.GEMINI_API_KEY);
+  const validCustomKey =
+    typeof customApiKey === 'string' && /^[A-Za-z0-9_-]{20,100}$/.test(customApiKey.trim())
+      ? customApiKey.trim()
+      : undefined;
+  return Boolean(validCustomKey || process.env.GEMINI_API_KEY);
 }
 
 // Fallback high-fidelity plan generator tailored strictly to user inputs

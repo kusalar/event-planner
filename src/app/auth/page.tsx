@@ -16,10 +16,23 @@ const SIGNUP_COOLDOWN_SECONDS = 60;
 // ── View modes ────────────────────────────────────────────────────────────────
 type ViewMode = 'signin' | 'signup' | 'forgot';
 
+/**
+ * Validates and sanitizes destination redirect path.
+ * Strictly prevents open redirect attacks to external hosts or arbitrary schemes.
+ */
+function sanitizeRedirectPath(path: string | null): string {
+  if (!path) return '/dashboard';
+  // Must be an internal relative path starting with a single '/'
+  if (path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\') && !path.includes(':')) {
+    return path;
+  }
+  return '/dashboard';
+}
+
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/dashboard';
+  const redirectPath = sanitizeRedirectPath(searchParams.get('redirect'));
   const signedOutParam = searchParams.get('signedOut');
 
   const { signIn, signUp, forgotPassword, enterDemoMode } = useAuth();

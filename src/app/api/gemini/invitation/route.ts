@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiClient } from '@/lib/gemini';
+import { checkRateLimit, getClientIp, createRateLimitHeaders } from '@/lib/rateLimit';
+import {
+  parseJsonBody,
+  sanitizeText,
+  validateCustomApiKey,
+  authenticateRequestUser,
+} from '@/lib/apiSecurity';
 
 interface InvitationResponse {
   whatsapp_message: string;
@@ -20,23 +27,45 @@ function isValidInvitationResponse(data: unknown): data is { whatsapp_message: s
 
 export async function POST(req: NextRequest) {
   try {
-    let body: Record<string, unknown>;
-    try {
-      body = await req.json();
-      if (!body || typeof body !== 'object') {
-        return NextResponse.json({ error: 'Request body must be a valid JSON object' }, { status: 400 });
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid or empty JSON in request body' }, { status: 400 });
+    // 1. Authenticate user if Bearer token present
+    const authUser = await authenticateRequestUser(req);
+    const clientIdentifier = authUser ? `usr_${authUser.id}` : getClientIp(req.headers);
+
+    // 2. Sliding window rate limit: 30 req/min for authenticated, 15 req/min for anonymous
+    const rateLimitLimit = authUser ? 30 : 15;
+    const rateLimit = checkRateLimit(clientIdentifier, 'invitation_generate', {
+      limit: rateLimitLimit,
+      windowSeconds: 60,
+    });
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. Please wait a moment before generating another invitation.',
+          retryAfter: rateLimit.retryAfter,
+        },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimit),
+        }
+      );
     }
 
-    const title = typeof body.title === 'string' ? body.title.trim() : '';
-    const eventType = typeof body.eventType === 'string' ? body.eventType.trim() : 'event';
-    const date = typeof body.date === 'string' ? body.date.trim() : '';
-    const location = typeof body.location === 'string' ? body.location.trim() : '';
-    const hostNames = typeof body.hostNames === 'string' ? body.hostNames.trim() : '';
-    const tone = typeof body.tone === 'string' ? body.tone.trim() : 'Royal & Elegant';
-    const customApiKey = typeof body.customApiKey === 'string' ? body.customApiKey.trim() : undefined;
+    // 3. Request payload validation (max 64 KB + safe JSON parse)
+    const bodyResult = await parseJsonBody<Record<string, unknown>>(req);
+    if (!bodyResult.success || !bodyResult.data) {
+      return bodyResult.errorResponse!;
+    }
+    const body = bodyResult.data;
+
+    // 4. Input sanitization & bounds checking
+    const title = sanitizeText(body.title, 120);
+    const eventType = sanitizeText(body.eventType, 50) || 'event';
+    const date = sanitizeText(body.date, 30);
+    const location = sanitizeText(body.location, 120);
+    const hostNames = sanitizeText(body.hostNames, 120);
+    const tone = sanitizeText(body.tone, 50) || 'Royal & Elegant';
+    const customApiKey = validateCustomApiKey(body.customApiKey);
 
     if (!title) {
       return NextResponse.json({ error: 'Event title is required for generating invitations' }, { status: 400 });
@@ -64,13 +93,27 @@ Respond in JSON format:
   "subject_line": "string"
 }`;
 
-        const res = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-          },
-        });
+        // 15-second AbortController to cancel remote network connection on timeout
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => {
+          abortController.abort(new Error('Gemini API call timed out after 15 seconds'));
+        }, 15000);
+
+        let res;
+        try {
+          res = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              maxOutputTokens: 1000,
+              abortSignal: abortController.signal,
+              httpOptions: { timeout: 15000 },
+            },
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         const text = res.text || '';
         const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -83,10 +126,12 @@ Respond in JSON format:
             subject_line: parsed.subject_line,
             isLiveModel: true,
           };
-          return NextResponse.json(responsePayload);
+          return NextResponse.json(responsePayload, {
+            headers: createRateLimitHeaders(rateLimit),
+          });
         }
       } catch (e: unknown) {
-        console.warn('Gemini invitation generation failed, falling back to curated templates:', e);
+        console.warn('Gemini invitation generation failed, falling back to curated templates:', e instanceof Error ? e.message : String(e));
       }
     }
 
@@ -99,29 +144,34 @@ Respond in JSON format:
     const displayLocation = location || 'Location to be announced';
     const displayHosts = hostNames || 'The Hosts';
 
-    if (tone === 'Traditional' || tone === 'Royal') {
-      subject = `Wedding Invitation: Celebrating ${title}`;
-      whatsapp = `✨ *|| শ্রী শ্রী প্রজাপতয়ে নমঃ ||* ✨\n\nWith the divine blessings of the Almighty and our elders, we cordially invite you and your family to celebrate the auspicious union of:\n\n👑 *${title}*\n\n📅 *Date:* ${displayDate}\n📍 *Venue:* ${displayLocation}\n\nJoin us for an evening of joyous rituals, traditional music, and an authentic banquet feast.\n\nWarm regards,\n*${displayHosts}*\n\n_Please RSVP by 2 weeks prior._`;
-      card = `Together with their families\n\nCordially request the pleasure of your company to celebrate\n\n${title}\n\non ${displayDate}\nat ${displayLocation}\n\nDinner & Celebrations to follow.`;
-    } else if (tone === 'Quirky' || tone === 'Modern') {
-      subject = `You're Invited! Join us for ${title} 🎉`;
-      whatsapp = `🥂 *Save the Date!* 🥂\n\nGood food, great music, and endless memories — we’re celebrating *${title}* and it wouldn't be complete without you!\n\n🗓️ *When:* ${displayDate}\n📍 *Where:* ${displayLocation}\n\nPut on your dancing shoes and get ready for a memorable time! 💃🕺\n\nCheers,\n${displayHosts}`;
-      card = `Join us as we celebrate\n\n${title}\n\n${displayDate} • ${displayLocation}\n\nBring your smiles and best celebration vibes!`;
-    } else {
+    if (eventType === 'wedding') {
+      subject = `Wedding Invitation: Celebrating the Union of ${title}`;
+      whatsapp = `✨ *Two Hearts, One Journey* ✨\n\nWith immense joy and gratitude, *${displayHosts}* invite you to grace the auspicious wedding celebration of *${title}*.\n\n📅 *Date:* ${displayDate}\n📍 *Venue:* ${displayLocation}\n\nYour presence and blessings will make our special day complete. Kindly treat this as our personal invitation.\n\n_Please RSVP by sending a reply to this message._ 🕊️`;
+      card = `Together with their families\n\n${displayHosts}\n\nrequest the honour of your presence at the wedding ceremony of\n\n${title}\n\n${displayDate}\n${displayLocation}\n\nDinner & Celebrations to follow\n\nR.S.V.P.`;
+    } else if (eventType === 'corporate') {
       subject = `Official Invitation: ${title}`;
-      whatsapp = `Dear Guests,\n\nYou are cordially invited to attend:\n\n*${title}*\n\nDate: ${displayDate}\nLocation: ${displayLocation}\n\nWe look forward to welcoming you.\n\nSincerely,\n${displayHosts}`;
-      card = `We have the honor to invite you to attend\n\n${title}\n\nheld at ${displayLocation}\non ${displayDate}.`;
+      whatsapp = `👔 *You Are Invited: ${title}* 🚀\n\nHosted by *${displayHosts}*, this premier gathering convenes thought leaders, founders, and innovators.\n\n🗓️ *Date:* ${displayDate}\n📍 *Venue:* ${displayLocation}\n\nJoin us for keynote presentations, networking luncheons, and live breakout sessions.\n\n_Confirm your registration via our event portal._`;
+      card = `${displayHosts}\n\ncordially invites you to attend\n\n${title}\n\nDate: ${displayDate}\nVenue: ${displayLocation}\n\nRegistration & Networking commence at 9:00 AM\n\nStrictly by Invitation`;
+    } else {
+      subject = `Celebration Alert: ${title}!`;
+      whatsapp = `🎉 *It's Time to Celebrate!* 🎂\n\n*${displayHosts}* cordially invite you to celebrate *${title}* with an evening of music, gourmet delicacies, and joyous memories.\n\n📅 *Date:* ${displayDate}\n📍 *Location:* ${displayLocation}\n\nCome celebrate with us! ✨`;
+      card = `Join us as we celebrate\n\n${title}\n\nHosted by ${displayHosts}\n\n${displayDate}\n${displayLocation}\n\nWarmest regards & R.S.V.P.`;
     }
 
-    return NextResponse.json({
-      whatsapp_message: whatsapp,
-      card_text: card,
-      subject_line: subject,
-      isLiveModel: false,
-    });
+    return NextResponse.json(
+      {
+        whatsapp_message: whatsapp,
+        card_text: card,
+        subject_line: subject,
+        isLiveModel: false,
+      },
+      {
+        headers: createRateLimitHeaders(rateLimit),
+      }
+    );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Invitation generation failed';
-    console.error('Invitation route error:', message);
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
+    console.error('Invitation API error:', message);
     return NextResponse.json({ error: 'Failed to generate invitation' }, { status: 500 });
   }
 }

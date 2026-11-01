@@ -313,6 +313,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         localStorage.removeItem(DEMO_STORAGE_KEY);
         localStorage.removeItem('eventora_supabase_auth_token');
+        // Clear all session storage tokens, drafts, and temporary prompts
+        sessionStorage.removeItem('eventora_prefilled_prompt');
+        sessionStorage.removeItem('eventora_latest_plan');
+        sessionStorage.removeItem('eventora_signup_cooldown_expiry');
       } catch { /* ignore */ }
       setIsLoading(false);
     }

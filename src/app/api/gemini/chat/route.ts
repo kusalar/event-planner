@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiClient } from '@/lib/gemini';
+import { checkRateLimit, getClientIp, createRateLimitHeaders } from '@/lib/rateLimit';
+import {
+  parseJsonBody,
+  sanitizeText,
+  validateCustomApiKey,
+  authenticateRequestUser,
+} from '@/lib/apiSecurity';
 
 interface IncomingChatMessage {
   sender: 'user' | 'assistant';
@@ -24,30 +31,76 @@ interface EventContextPayload {
 
 export async function POST(req: NextRequest) {
   try {
-    let body: Record<string, unknown>;
-    try {
-      body = await req.json();
-      if (!body || typeof body !== 'object') {
-        return NextResponse.json({ error: 'Request body must be a valid JSON object' }, { status: 400 });
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid or empty JSON in request body' }, { status: 400 });
+    // 1. Authenticate user if Bearer token present
+    const authUser = await authenticateRequestUser(req);
+    const clientIdentifier = authUser ? `usr_${authUser.id}` : getClientIp(req.headers);
+
+    // 2. Sliding window rate limit: 60 req/min for authenticated, 30 req/min for anonymous
+    const rateLimitLimit = authUser ? 60 : 30;
+    const rateLimit = checkRateLimit(clientIdentifier, 'chat_message', {
+      limit: rateLimitLimit,
+      windowSeconds: 60,
+    });
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          error: 'Rate limit exceeded. Please wait a moment before sending another message.',
+          retryAfter: rateLimit.retryAfter,
+        },
+        {
+          status: 429,
+          headers: createRateLimitHeaders(rateLimit),
+        }
+      );
     }
 
-    const messages = Array.isArray(body.messages) ? (body.messages as IncomingChatMessage[]) : null;
-    const eventContext = (body.eventContext && typeof body.eventContext === 'object') ? (body.eventContext as EventContextPayload) : null;
-    const customApiKey = typeof body.customApiKey === 'string' ? body.customApiKey.trim() : undefined;
+    // 3. Request payload validation (max 64 KB + safe JSON parse)
+    const bodyResult = await parseJsonBody<Record<string, unknown>>(req);
+    if (!bodyResult.success || !bodyResult.data) {
+      return bodyResult.errorResponse!;
+    }
+    const body = bodyResult.data;
 
-    if (!messages || messages.length === 0) {
+    const rawMessages = Array.isArray(body.messages) ? (body.messages as IncomingChatMessage[]) : null;
+    const rawContext = (body.eventContext && typeof body.eventContext === 'object') ? (body.eventContext as EventContextPayload) : null;
+    const customApiKey = validateCustomApiKey(body.customApiKey);
+
+    if (!rawMessages || rawMessages.length === 0) {
       return NextResponse.json({ error: 'No messages provided' }, { status: 400 });
     }
 
+    // Bound conversation history to last 25 messages and sanitize each message
+    const messages: IncomingChatMessage[] = rawMessages.slice(-25).map((m) => ({
+      sender: m.sender === 'user' ? 'user' : 'assistant',
+      content: sanitizeText(m.content, 2000),
+    }));
+
     const lastMsg = messages[messages.length - 1];
-    if (!lastMsg || typeof lastMsg.content !== 'string' || !lastMsg.content.trim()) {
+    if (!lastMsg || !lastMsg.content) {
       return NextResponse.json({ error: 'Last message must contain non-empty text content' }, { status: 400 });
     }
 
-    const lastUserMessage = lastMsg.content.trim();
+    // Sanitize event context
+    const eventContext: EventContextPayload | null = rawContext
+      ? {
+          title: sanitizeText(rawContext.title, 120),
+          eventType: sanitizeText(rawContext.eventType, 50),
+          date: sanitizeText(rawContext.date, 30),
+          location: sanitizeText(rawContext.location, 120),
+          guestCount: Math.max(0, Math.min(100000, Number(rawContext.guestCount) || 0)),
+          totalBudget: Math.max(0, Math.min(1000000000, Number(rawContext.totalBudget) || 0)),
+          totalSpent: Math.max(0, Math.min(1000000000, Number(rawContext.totalSpent) || 0)),
+          remainingBudget: Math.max(-1000000000, Math.min(1000000000, Number(rawContext.remainingBudget) || 0)),
+          foodPreferences: sanitizeText(rawContext.foodPreferences, 200),
+          theme: sanitizeText(rawContext.theme, 200),
+          bookedVendorsCount: Math.max(0, Math.min(500, Number(rawContext.bookedVendorsCount) || 0)),
+          completedTasksCount: Math.max(0, Math.min(1000, Number(rawContext.completedTasksCount) || 0)),
+          totalTasksCount: Math.max(0, Math.min(1000, Number(rawContext.totalTasksCount) || 0)),
+        }
+      : null;
+
+    const lastUserMessage = lastMsg.content;
     const ai = getGeminiClient(customApiKey);
 
     const contextSummary = eventContext
@@ -86,22 +139,41 @@ Rules:
           parts: [{ text: m.content }],
         }));
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents,
-          config: {
-            systemInstruction,
-          },
-        });
+        // 15-second AbortController to cancel remote network connection on timeout
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => {
+          abortController.abort(new Error('Gemini API call timed out after 15 seconds'));
+        }, 15000);
+
+        let response;
+        try {
+          response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents,
+            config: {
+              systemInstruction,
+              maxOutputTokens: 1500,
+              abortSignal: abortController.signal,
+              httpOptions: { timeout: 15000 },
+            },
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
 
         const reply = response.text || "I'm ready to help you plan your event. What would you like to explore next?";
-        return NextResponse.json({
-          reply,
-          isLiveModel: true,
-          model: 'gemini-2.5-flash',
-        });
+        return NextResponse.json(
+          {
+            reply,
+            isLiveModel: true,
+            model: 'gemini-2.5-flash',
+          },
+          {
+            headers: createRateLimitHeaders(rateLimit),
+          }
+        );
       } catch (geminiError: unknown) {
-        apiErrorMessage = geminiError instanceof Error ? geminiError.message : String(geminiError);
+        apiErrorMessage = geminiError instanceof Error ? geminiError.message : 'Upstream provider error';
         console.warn('Gemini chat failed, using contextual fallback:', apiErrorMessage);
       }
     }
@@ -193,17 +265,22 @@ Here is my recommendation:
 - **Next Step:** Would you like me to refine your catering menu, draft custom invitation wording, or review your vendor checklists?`;
     }
 
-    return NextResponse.json({
-      reply,
-      isLiveModel: false,
-      isDemoMode: true,
-      keyError: apiErrorMessage,
-      note: apiErrorMessage
-        ? `API notice: ${apiErrorMessage}. Reverted to curated domain intelligence.`
-        : 'Demo Mode: Running curated local intelligence. Set a valid Gemini API Key in Settings to enable Live Gemini API calls.',
-    });
+    return NextResponse.json(
+      {
+        reply,
+        isLiveModel: false,
+        isDemoMode: true,
+        keyError: apiErrorMessage,
+        note: apiErrorMessage
+          ? `API notice: ${apiErrorMessage}. Reverted to curated domain intelligence.`
+          : 'Demo Mode: Running curated local intelligence. Set a valid Gemini API Key in Settings to enable Live Gemini API calls.',
+      },
+      {
+        headers: createRateLimitHeaders(rateLimit),
+      }
+    );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Chat failed';
+    const message = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('Chat API error:', message);
     return NextResponse.json({ error: 'Failed to process chat message' }, { status: 500 });
   }
