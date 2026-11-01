@@ -1,0 +1,39 @@
+# Eventora AI
+
+> Eventora AI is an intelligent, GenAI-powered event planning and production assistant designed to orchestrate celebrations, weddings, corporate summits, galas, and milestone gatherings.
+
+## Website & Public Links
+- Canonical Website: https://event-planner-liard-beta.vercel.app
+- Authentication & Sign-in: https://event-planner-liard-beta.vercel.app/auth
+- Sitemap: https://event-planner-liard-beta.vercel.app/sitemap.xml
+- Robots Policy: https://event-planner-liard-beta.vercel.app/robots.txt
+
+## Key Capabilities & Features
+
+### 1. GenAI Event Plan Generation
+- Generates end-to-end, structured event blueprints tailored to event type, guest count, location, cultural context, and budget.
+- Produces itemized budget allocations, milestone timelines, vendor staffing specs, and curated theme concepts.
+- Supported event types include Indian and multicultural weddings, corporate summits, birthday galas, anniversaries, and custom celebrations.
+
+### 2. Smart Budget Orchestration
+- Dynamically allocates event budgets across key categories (Venue, Catering, Decor, Photography, Entertainment, Logistics).
+- Real-time expense tracking, spent-vs-allocated analytics, and remaining budget calculation in INR (₹).
+
+### 3. Phased Milestone Timeline
+- Organizes event milestones across chronological phases (6 months before, 3 months, 1 month, 2 weeks, 1 week, and event day).
+- Tracks task priorities (high, medium, low), category tags, due dates, and real-time completion status.
+
+### 4. Vendor Lifecycle Management
+- Tracks event vendor categories including Venue, Catering, Decor, Photography, DJ & Music, Floral, and Transportation.
+- Manages vendor contact records, contract statuses (Inquiry, Shortlisted, Booked, Completed), and payment balances.
+
+### 5. Guest & RSVP Tracking
+- Tracks guest rosters, party sizes, attendance statuses (Confirmed, Attending, Pending, Declined), and dietary restrictions.
+- Computes confirmed headcount and dietary breakdowns in real time.
+
+### 6. Interactive 24/7 AI Event Assistant
+- Context-aware conversational AI assistant capable of answering questions, recommending catering adjustments, troubleshooting timelines, and suggesting creative event concepts based on active event plans.
+
+### 7. AI Invitation Drafting
+- Crafts culturally nuanced invitation copy, formal card text, and concise WhatsApp/SMS broadcast drafts tailored to tone (formal, warm, poetic, modern).
+

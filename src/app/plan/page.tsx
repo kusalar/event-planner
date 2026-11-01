@@ -18,7 +18,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { triggerConfetti } from '@/lib/confetti';
 import { GeneratedPlanResponse, EventItem } from '@/types';
 
 export default function PlanReviewPage() {
@@ -47,7 +47,7 @@ export default function PlanReviewPage() {
 
   useEffect(() => {
     if (planData) {
-      confetti({
+      triggerConfetti({
         particleCount: 50,
         spread: 60,
         origin: { y: 0.6 },
@@ -78,7 +78,7 @@ export default function PlanReviewPage() {
     // Create in global context
     createEventFromPlan(eventData, plan);
     // Trigger big confetti
-    confetti({
+    triggerConfetti({
       particleCount: 100,
       spread: 80,
       origin: { y: 0.5 },

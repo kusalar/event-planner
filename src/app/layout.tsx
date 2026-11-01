@@ -26,6 +26,14 @@ export const metadata: Metadata = {
   title: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
   description:
     'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
+  keywords: [
+    'AI event planner',
+    'smart event budget',
+    'wedding timeline manager',
+    'vendor tracker',
+    'RSVP management',
+    'GenAI event orchestrator',
+  ],
   alternates: {
     canonical: '/',
   },
@@ -39,10 +47,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/eventora-hero.jpg',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Eventora AI Platform Preview',
+        type: 'image/jpeg',
+        alt: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
       },
     ],
   },
@@ -51,7 +60,7 @@ export const metadata: Metadata = {
     title: 'Eventora AI — GenAI-Powered Smart Event Planning Assistant',
     description:
       'Plan weddings, corporate summits, and parties with GenAI. Features smart budget allocation, milestone timelines, vendor tracking, and 24/7 AI assistance.',
-    images: ['/eventora-hero.jpg'],
+    images: ['/og-image.jpg'],
   },
 };
 

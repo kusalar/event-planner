@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { TaskModal } from '@/components/TaskModal';
 import { TaskPhase } from '@/types';
-import confetti from 'canvas-confetti';
+import { triggerConfetti } from '@/lib/confetti';
 
 export default function TimelinePage() {
   const {
@@ -57,7 +57,7 @@ export default function TimelinePage() {
   const handleToggle = (taskId: string, currentStatus: boolean) => {
     toggleTimelineTask(taskId);
     if (!currentStatus) {
-      confetti({
+      triggerConfetti({
         particleCount: 30,
         spread: 45,
         origin: { y: 0.7 },
