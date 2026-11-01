@@ -145,6 +145,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Synchronize state when authentication or demo status changes
   useEffect(() => {
+    isLoadedRef.current = false;
     const timer = setTimeout(() => {
       if (user) {
         const saved = loadUserState(user.id, false);
@@ -157,7 +158,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
         setUserProfile(profile);
 
-        if (saved && saved.events) {
+        if (saved && saved.events && saved.events.length > 0) {
           setEvents(saved.events);
           setCurrentEventId(saved.currentEventId || saved.events[0]?.id || '');
           setCategoriesMap(saved.categoriesMap || {});
@@ -184,9 +185,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } else if (isDemoMode) {
         // Demo sandbox mode: load curated sample events
         const saved = loadUserState(null, true);
-        if (saved && saved.events) {
+        if (saved && saved.events && saved.events.length > 0) {
           setEvents(saved.events);
-          setCurrentEventId(saved.currentEventId || sampleEvents[0].id);
+          setCurrentEventId(saved.currentEventId || saved.events[0]?.id || sampleEvents[0].id);
           setCategoriesMap(saved.categoriesMap || sampleBudgetCategories);
           setExpensesMap(saved.expensesMap || sampleExpenses);
           setTasksMap(saved.tasksMap || sampleTimelineTasks);

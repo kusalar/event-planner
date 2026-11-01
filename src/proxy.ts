@@ -7,8 +7,8 @@ export function proxy(request: NextRequest) {
 
   // Construct strict Content Security Policy
   // - default-src 'none': strict baseline; all resource types explicitly declared
-  // - script-src: nonce-based with 'strict-dynamic' for trusted dependency loading; NO 'unsafe-inline'
-  // - style-src: self + nonce; style-src-attr 'unsafe-inline' for element style attributes (Recharts/Framer Motion)
+  // - script-src: 'self' for Next.js static chunks + unsafe-inline for framework hydration
+  // - style-src: self + unsafe-inline; style-src-attr 'unsafe-inline' for element style attributes (Recharts/Framer Motion)
   // - connect-src: Supabase REST/Realtime, Gemini API, Vercel Live
   // - img-src: Unsplash, Supabase storage, Google & GitHub profile avatars, blob & data URIs
   // - font-src: self + Google fonts gstatic data URIs
@@ -18,8 +18,8 @@ export function proxy(request: NextRequest) {
   // - upgrade-insecure-requests: automatic HTTPS upgrading
   const cspHeader = `
     default-src 'none';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''};
-    style-src 'self' 'nonce-${nonce}';
+    script-src 'self' 'unsafe-inline' https://vercel.live${isDev ? " 'unsafe-eval'" : ''};
+    style-src 'self' 'unsafe-inline';
     style-src-attr 'unsafe-inline';
     img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://*.googleusercontent.com https://*.githubusercontent.com;
     font-src 'self' data: https://fonts.gstatic.com;

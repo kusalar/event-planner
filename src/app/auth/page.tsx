@@ -34,11 +34,12 @@ function AuthContent() {
   const searchParams = useSearchParams();
   const redirectPath = sanitizeRedirectPath(searchParams.get('redirect'));
   const signedOutParam = searchParams.get('signedOut');
+  const initialMode = searchParams.get('mode') === 'signup' || searchParams.get('tab') === 'signup' ? 'signup' : 'signin';
 
   const { signIn, signUp, forgotPassword, enterDemoMode } = useAuth();
 
   // ── Form state ─────────────────────────────────────────────────────────────
-  const [view, setView] = useState<ViewMode>('signin');
+  const [view, setView] = useState<ViewMode>(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -235,7 +236,7 @@ function AuthContent() {
     enterDemoMode();
     setTimeout(() => {
       setLoading(false);
-      router.push('/dashboard');
+      router.push(redirectPath || '/dashboard');
     }, 200);
   };
 
@@ -470,6 +471,20 @@ function AuthContent() {
                 className="text-violet-600 dark:text-violet-400 font-semibold hover:underline"
               >
                 Sign In
+              </button>
+            </p>
+          )}
+
+          {/* New-account hint — signin only */}
+          {view === 'signin' && (
+            <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
+              Don&apos;t have an account?{' '}
+              <button
+                type="button"
+                onClick={() => switchView('signup')}
+                className="text-violet-600 dark:text-violet-400 font-semibold hover:underline"
+              >
+                Create Account
               </button>
             </p>
           )}
