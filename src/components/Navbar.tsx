@@ -202,7 +202,7 @@ export const Navbar: React.FC = () => {
               aria-label="Select regional currency"
               value={userProfile.currency}
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-              className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-violet-500"
+              className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 min-h-[40px] font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-violet-500"
             >
               <option value="INR">₹ INR</option>
               <option value="USD">$ USD</option>
@@ -213,7 +213,7 @@ export const Navbar: React.FC = () => {
             {/* Dark / Light Mode Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
               aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
             >
@@ -228,7 +228,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="lg:hidden p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileMenuOpen}
             >
@@ -248,7 +248,7 @@ export const Navbar: React.FC = () => {
                   key={item.name}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg text-sm font-medium ${
+                  className={`flex items-center space-x-2.5 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-medium ${
                     isActive
                       ? 'bg-violet-600 text-white font-semibold'
                       : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

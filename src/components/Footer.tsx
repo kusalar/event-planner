@@ -83,9 +83,9 @@ export const Footer: React.FC = () => {
 
             {/* Column 2: Quick Links */}
             <div>
-              <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
+              <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
                 Quick Links
-              </h4>
+              </h3>
               <ul className="space-y-2.5">
                 {quickLinks.map((item) => (
                   <li key={item.name}>
@@ -103,9 +103,9 @@ export const Footer: React.FC = () => {
 
             {/* Column 3: Features */}
             <div>
-              <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
+              <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
                 Features
-              </h4>
+              </h3>
               <ul className="space-y-2.5">
                 {features.map((item) => (
                   <li key={item.name}>
@@ -123,9 +123,9 @@ export const Footer: React.FC = () => {
 
             {/* Column 4: Support & Connect */}
             <div>
-              <h4 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
+              <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">
                 Support & Legal
-              </h4>
+              </h3>
               <ul className="space-y-2.5">
                 <li>
                   <button

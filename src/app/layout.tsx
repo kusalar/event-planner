@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import React, { Suspense } from 'react';
 import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
@@ -69,6 +71,29 @@ const jsonLd = {
   },
 };
 
+async function NonceThemeScript() {
+  const headersList = await headers();
+  const nonce = headersList.get('x-nonce') || undefined;
+
+  return (
+    <>
+      {/* Synchronous inline script prevents flash of incorrect theme before first paint */}
+      <script
+        nonce={nonce}
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var theme="dark";for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf("eventora_")===0){try{var s=JSON.parse(localStorage.getItem(k)||"{}");if(s&&s.theme){theme=s.theme;break;}}catch(e){}}}if(theme==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}}catch(e){}})();`,
+        }}
+      />
+      {/* Structured Data (JSON-LD) for SoftwareApplication */}
+      <script
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+    </>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -77,17 +102,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${sansFont.variable} ${serifFont.variable}`} suppressHydrationWarning>
       <head>
-        {/* Synchronous inline script prevents flash of incorrect theme before first paint */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var theme="dark";for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf("eventora_")===0){try{var s=JSON.parse(localStorage.getItem(k)||"{}");if(s&&s.theme){theme=s.theme;break;}}catch(e){}}}if(theme==="light"){document.documentElement.classList.remove("dark");}else{document.documentElement.classList.add("dark");}}catch(e){}})();`,
-          }}
-        />
-        {/* Structured Data (JSON-LD) for SoftwareApplication */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <Suspense fallback={null}>
+          <NonceThemeScript />
+        </Suspense>
       </head>
       <body className="min-h-screen flex flex-col antialiased selection:bg-violet-500 selection:text-white font-sans">
         {/* Accessible Skip to Content Link */}

@@ -526,5 +526,28 @@ Updated `src/app/robots.ts` to disallow crawlers from accessing private creation
 - Added `/auth/reset-password`
 Verified live output at `/robots.txt` confirms both routes are blocked from search engine indexing while allowing public marketing routes and sitemap indexing.
 
+---
+
+## 9. PRODUCTION SECURITY REMEDIATION (CSP NONCES, CORS ELIMINATION & ACCESSIBILITY)
+
+### 9.1 Nonce-Based Content Security Policy (`src/proxy.ts`)
+- Implemented Next.js 16 `src/proxy.ts` generating unique, cryptographically random nonces via `crypto.randomUUID()`.
+- Stripped `'unsafe-inline'` and `'unsafe-eval'` from production `script-src`.
+- Configured `'strict-dynamic'` for secure runtime script chunk loading.
+- Replaced `default-src 'self'` with `default-src 'none'`.
+- Configured `style-src 'self' 'nonce-{nonce}'` and `style-src-attr 'unsafe-inline'` for inline style attributes (Recharts/Framer Motion).
+- Added dynamic nonce binding to inline theme script and JSON-LD structured data via `<Suspense>` in `src/app/layout.tsx`.
+
+### 9.2 CORS Remediation
+- Removed blanket CORS headers (`Access-Control-Allow-Methods`, `Access-Control-Allow-Headers`) from `next.config.ts`.
+- Configured dedicated `default-src 'none'; frame-ancestors 'none'; base-uri 'none'` policy for `/api/:path*`.
+- Eliminated `Access-Control-Allow-Origin: *` wildcard from authenticated application and API responses.
+
+### 9.3 Accessibility & Hierarchy Fixes
+- Added `min-h-[48px] inline-flex items-center justify-center` to *"Explore Sample Bengali Wedding"* and *"Launch Eventora AI Planner"* buttons.
+- Updated `Footer.tsx` column headings from `<h4>` to `<h3>` to fix skipped heading levels (H2 &rarr; H3).
+- Expanded interactive touch targets across navigation (currency select, theme toggle, mobile hamburger, mobile links) to meet WCAG 2.2 AA / AAA standards.
+
+
 
 
